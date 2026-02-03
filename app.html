@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex | Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <div class="bg-orbit"></div>
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-mark">Vx</span>
+        <span>Vertex</span>
+      </div>
+      <nav>
+        <a class="active" href="#">Command Center</a>
+        <a href="#">Nexus Prep</a>
+        <a href="#">Vector Planner</a>
+        <a href="#">Knowledge Graph</a>
+        <a href="#">Insights</a>
+      </nav>
+      <div class="profile">
+        <p>Demo Developer</p>
+        <span>Last sync: 2 min</span>
+      </div>
+    </aside>
+
+    <main class="dashboard">
+      <header class="dash-header">
+        <div>
+          <p class="eyebrow">Live Execution</p>
+          <h1>Vertex Command Center</h1>
+        </div>
+        <div class="header-actions">
+          <button class="ghost">Sync Inputs</button>
+          <button>New Sprint</button>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card highlight">
+          <h2>Today's Execution Map</h2>
+          <p>Fluid Time has auto-injected three sprints based on live gaps.</p>
+          <div class="timeline">
+            <div>
+              <span>8:10</span>
+              <strong>Physics: Momentum Nexus</strong>
+            </div>
+            <div>
+              <span>11:30</span>
+              <strong>Calculus: Limits Drill</strong>
+            </div>
+            <div>
+              <span>18:00</span>
+              <strong>AP Lit: Synthesis Sprint</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Nexus Prep Intake</h3>
+          <p>Contextual scans queued for signal ingestion.</p>
+          <ul>
+            <li>Quiz 7 · 14/20 tagged</li>
+            <li>Lab notes · 6 pages</li>
+            <li>LMS export · 2 courses</li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>Knowledge Graph</h3>
+          <p>Top instability clusters.</p>
+          <div class="graph">
+            <span>Vector Fields</span>
+            <span>Equilibrium</span>
+            <span>Energy Transfer</span>
+            <span>Wave Superposition</span>
+          </div>
+        </article>
+
+        <article class="card wide">
+          <h3>Vector Planner</h3>
+          <p>Adaptive schedule updated in real time.</p>
+          <div class="planner">
+            <div>
+              <span>Mon</span>
+              <strong>Targeted Sprint · Physics</strong>
+            </div>
+            <div>
+              <span>Tue</span>
+              <strong>Diagnostics · Algebra</strong>
+            </div>
+            <div>
+              <span>Wed</span>
+              <strong>Recovery Block · Humanities</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Alerts</h3>
+          <p>Execution risks detected.</p>
+          <div class="alert">
+            <span>⚡</span>
+            <div>
+              <strong>Physics gap widening</strong>
+              <p>Momentum nexus unresolved for 48h.</p>
+            </div>
+          </div>
+          <div class="alert">
+            <span>⏱</span>
+            <div>
+              <strong>Schedule conflict</strong>
+              <p>Varsity training overlaps with sprint.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Execution Score</h3>
+          <p>Closed-loop performance index.</p>
+          <div class="score">
+            <strong>92</strong>
+            <span>+6 this week</span>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

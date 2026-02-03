@@ -1,16 +1,22 @@
 const form = document.querySelector("#login-form");
 const status = document.querySelector("#status");
-const button = form.querySelector("button");
+
+const demoEmail = "demo@vertex.edu";
+const demoPassword = "vertex-demo";
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
+  status.textContent = "Signing in...";
 
-  const handle = form.handle.value.trim() || "vx-ops";
-  status.textContent = "Status: authenticating...";
-  button.disabled = true;
+  const email = form.email.value.trim().toLowerCase();
+  const password = form.password.value.trim();
 
   setTimeout(() => {
-    status.textContent = `Status: access granted for ${handle}`;
-    button.disabled = false;
-  }, 900);
+    if (email === demoEmail && password === demoPassword) {
+      window.location.href = "app.html";
+      return;
+    }
+
+    status.textContent = "Incorrect demo credentials. Try the ones above.";
+  }, 500);
 });
