@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex | Developer Access</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <main class="terminal">
+      <div class="terminal-header">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <p>Vertex Security Console</p>
+      </div>
+      <div class="terminal-body">
+        <div class="scanline"></div>
+        <p class="boot">Initializing Vertex Gate v0.9 (demo)</p>
+        <p class="boot">Running environment check... OK</p>
+        <p class="boot">Establishing encrypted tunnel... OK</p>
+        <p class="boot">Awaiting developer credentials.</p>
+
+        <form id="login-form" class="login-form">
+          <label for="handle">dev-handle</label>
+          <input id="handle" name="handle" type="text" placeholder="vx-ops" />
+
+          <label for="passcode">passcode</label>
+          <input id="passcode" name="passcode" type="password" placeholder="••••••" />
+
+          <button type="submit">authorize</button>
+        </form>
+
+        <p id="status" class="status">Status: idle</p>
+        <div class="access-badge">
+          <span>Access Level</span>
+          <strong>Developer (demo)</strong>
+        </div>
+
+        <div class="links">
+          <a href="index.html">Return to Vertex</a>
+        </div>
+      </div>
+    </main>
+
+    <script src="login.js"></script>
+  </body>
+</html>
