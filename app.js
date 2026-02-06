@@ -1,6 +1,6 @@
 const highlight = document.querySelector(".highlight");
 const syncButton = document.querySelector('[data-action="sync"]');
-const sprintButton = document.querySelector('[data-action="sprint"]');
+const focusButton = document.querySelector('[data-action="focus"]');
 const lastSync = document.querySelector("#last-sync");
 const syncStatus = document.querySelector("#sync-status");
 const intakeList = document.querySelector("#intake-list");
@@ -15,20 +15,20 @@ const formatTime = (date) =>
 
 const calendarData = {
   day: [
-    { label: "08:10 Physics Sprint", level: "high" },
+    { label: "08:10 Physics Focus", level: "high" },
     { label: "11:30 Calculus Drill", level: "high" },
     { label: "18:00 Recovery Block", level: "medium" },
     { label: "Evening Review", level: "low" },
   ],
   week: [
-    { label: "Mon: Physics Sprint", level: "high" },
+    { label: "Mon: Physics Focus", level: "high" },
     { label: "Tue: Calculus Drill", level: "high" },
     { label: "Wed: AP Lit Draft", level: "medium" },
     { label: "Thu: Quiz Prep", level: "medium" },
     { label: "Fri: Recovery", level: "low" },
   ],
   month: [
-    { label: "Sprint Cycle A", level: "high" },
+    { label: "Focus Cycle A", level: "high" },
     { label: "Midterm Block", level: "high" },
     { label: "Writing Milestones", level: "medium" },
     { label: "Weekly Recovery", level: "low" },
@@ -170,7 +170,7 @@ syncButton?.addEventListener("click", () => {
   }, 700);
 });
 
-sprintButton?.addEventListener("click", () => {
+focusButton?.addEventListener("click", () => {
   const now = new Date();
   if (!timeline) {
     return;
@@ -183,7 +183,7 @@ sprintButton?.addEventListener("click", () => {
   time.textContent = formatTime(now);
 
   const label = document.createElement("strong");
-  label.textContent = "Targeted Sprint · Deep Focus";
+  label.textContent = "Targeted Focus · Deep Work";
 
   row.append(time, label);
   timeline.prepend(row);
