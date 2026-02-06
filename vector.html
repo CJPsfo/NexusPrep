@@ -43,22 +43,15 @@
 
       <section class="grid">
         <article class="card highlight">
-          <h2>Fluid Time Allocation</h2>
-          <p>Adaptive plan generated from live mastery signals.</p>
-          <div class="timeline" id="timeline">
-            <div>
-              <span>08:10</span>
-              <strong>Targeted Sprint · Physics</strong>
-            </div>
-            <div>
-              <span>11:30</span>
-              <strong>Diagnostics · Algebra</strong>
-            </div>
-            <div>
-              <span>18:00</span>
-              <strong>Recovery Block · Humanities</strong>
-            </div>
+          <h2>Vector Calendar</h2>
+          <p>Zoom from day to year while filtering low-priority noise.</p>
+          <div class="calendar-controls">
+            <button class="chip active" data-view="day">Day</button>
+            <button class="chip" data-view="week">Week</button>
+            <button class="chip" data-view="month">Month</button>
+            <button class="chip" data-view="year">Year</button>
           </div>
+          <div class="calendar-grid" id="calendar-grid"></div>
         </article>
 
         <article class="card">

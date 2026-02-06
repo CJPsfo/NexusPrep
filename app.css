@@ -219,6 +219,90 @@ body {
   border: 1px solid var(--line);
 }
 
+.calendar-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 12px 22px rgba(27, 91, 255, 0.2);
+}
+
+.calendar-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.calendar-grid.view-day {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.calendar-grid.view-week {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-grid.view-month {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.calendar-grid.view-year {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.calendar-cell {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  min-height: 92px;
+  display: grid;
+  gap: 6px;
+}
+
+.calendar-cell .cell-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.calendar-item {
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+.calendar-item.high {
+  background: rgba(27, 91, 255, 0.12);
+  border-color: rgba(27, 91, 255, 0.3);
+}
+
+.calendar-item.medium {
+  background: rgba(27, 91, 255, 0.08);
+  border-color: rgba(27, 91, 255, 0.2);
+}
+
+.calendar-item.low {
+  background: rgba(11, 15, 26, 0.04);
+}
+
 .timeline div.new {
   border-color: rgba(27, 91, 255, 0.5);
   background: #f6f8ff;
