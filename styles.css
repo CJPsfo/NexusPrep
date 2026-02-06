@@ -1,14 +1,14 @@
 :root {
   color-scheme: only light;
-  --bg: #f4f1ea;
-  --ink: #1c1b19;
-  --muted: #6b6257;
-  --accent: #ff5a36;
-  --accent-dark: #ce3b1c;
+  --bg: #f7f9ff;
+  --ink: #0b0f1a;
+  --muted: #5b6475;
+  --accent: #1b5bff;
+  --accent-dark: #0f3ccf;
   --surface: #ffffff;
-  --surface-2: #fef6ec;
-  --line: #ded7cc;
-  --glow: rgba(255, 90, 54, 0.18);
+  --surface-2: #f1f5ff;
+  --line: #e2e6f0;
+  --glow: rgba(27, 91, 255, 0.18);
 }
 
 * {
@@ -18,8 +18,8 @@
 body {
   margin: 0;
   font-family: "Space Grotesk", "Trebuchet MS", sans-serif;
-  background: radial-gradient(circle at top left, #fff5e9, var(--bg) 55%),
-    linear-gradient(120deg, rgba(255, 90, 54, 0.08), transparent 50%);
+  background: radial-gradient(circle at top left, #ffffff, var(--bg) 55%),
+    linear-gradient(120deg, rgba(27, 91, 255, 0.08), transparent 50%);
   color: var(--ink);
   min-height: 100vh;
 }
@@ -41,9 +41,9 @@ body {
   padding: 24px 6vw;
   position: sticky;
   top: 0;
-  background: rgba(244, 241, 234, 0.7);
+  background: rgba(247, 249, 255, 0.7);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(222, 215, 204, 0.6);
+  border-bottom: 1px solid var(--line);
   z-index: 10;
 }
 
@@ -88,7 +88,7 @@ body {
   padding: 12px 20px;
   border-radius: 999px;
   background: var(--accent);
-  color: #fffaf4;
+  color: #ffffff;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -388,7 +388,7 @@ main {
   gap: 24px;
   padding: 40px 6vw 60px;
   border-top: 1px solid var(--line);
-  background: #f9f5ef;
+  background: #f7f9ff;
 }
 
 .footer-title {

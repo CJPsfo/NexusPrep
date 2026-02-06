@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex | Vector Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <div class="bg-orbit"></div>
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-mark">Vx</span>
+        <span>Vertex</span>
+      </div>
+      <nav>
+        <a href="app.html">Command Center</a>
+        <a href="nexus.html">Nexus Prep</a>
+        <a class="active" href="vector.html">Vector Planner</a>
+        <a href="graph.html">Knowledge Graph</a>
+        <a href="insights.html">Insights</a>
+      </nav>
+      <div class="profile">
+        <p>Demo Developer</p>
+        <span id="last-sync">Last sync: 2 min</span>
+      </div>
+    </aside>
+
+    <main class="dashboard">
+      <header class="dash-header">
+        <div>
+          <p class="eyebrow">Scheduling</p>
+          <h1>Vector Planner</h1>
+        </div>
+        <div class="header-actions">
+          <button data-action="sprint">New Sprint</button>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card highlight">
+          <h2>Fluid Time Allocation</h2>
+          <p>Adaptive plan generated from live mastery signals.</p>
+          <div class="timeline" id="timeline">
+            <div>
+              <span>08:10</span>
+              <strong>Targeted Sprint · Physics</strong>
+            </div>
+            <div>
+              <span>11:30</span>
+              <strong>Diagnostics · Algebra</strong>
+            </div>
+            <div>
+              <span>18:00</span>
+              <strong>Recovery Block · Humanities</strong>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Load Balance</h3>
+          <p>Energy curve aligned with academic intensity.</p>
+          <div class="graph">
+            <span>High intensity · 3</span>
+            <span>Medium intensity · 5</span>
+            <span>Recovery · 2</span>
+            <span>Flex · 4</span>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Schedule Conflicts</h3>
+          <p>Adjustments needed to maintain flow.</p>
+          <div class="alert">
+            <span>⏱</span>
+            <div>
+              <strong>Varsity training overlap</strong>
+              <p>Shift sprint window by 45 minutes.</p>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

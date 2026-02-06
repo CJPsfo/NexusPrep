@@ -1,13 +1,13 @@
 :root {
   color-scheme: only light;
-  --bg: #fbfbff;
-  --ink: #0d1321;
-  --muted: #657084;
-  --accent: #2f6bff;
-  --accent-dark: #1a44c8;
+  --bg: #f7f9ff;
+  --ink: #0b0f1a;
+  --muted: #5b6475;
+  --accent: #1b5bff;
+  --accent-dark: #0f3ccf;
   --surface: #ffffff;
-  --surface-2: #f3f6ff;
-  --line: #e1e6f3;
+  --surface-2: #f1f5ff;
+  --line: #e2e6f0;
 }
 
 * {
@@ -18,7 +18,7 @@ body {
   margin: 0;
   font-family: "Sora", "Segoe UI", sans-serif;
   background: radial-gradient(circle at top left, #ffffff, var(--bg) 55%),
-    radial-gradient(circle at bottom right, #e8efff, transparent 45%);
+    radial-gradient(circle at bottom right, #eaf0ff, transparent 45%);
   color: var(--ink);
   min-height: 100vh;
 }
@@ -159,12 +159,12 @@ button {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 18px 32px rgba(47, 107, 255, 0.22);
+  box-shadow: 0 18px 32px rgba(27, 91, 255, 0.22);
 }
 
 button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 24px 40px rgba(47, 107, 255, 0.26);
+  box-shadow: 0 24px 40px rgba(27, 91, 255, 0.26);
 }
 
 .status {

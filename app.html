@@ -20,35 +20,35 @@
         <span>Vertex</span>
       </div>
       <nav>
-        <a class="active" href="#">Command Center</a>
-        <a href="#">Nexus Prep</a>
-        <a href="#">Vector Planner</a>
-        <a href="#">Knowledge Graph</a>
-        <a href="#">Insights</a>
+        <a class="active" href="app.html">Command Center</a>
+        <a href="nexus.html">Nexus Prep</a>
+        <a href="vector.html">Vector Planner</a>
+        <a href="graph.html">Knowledge Graph</a>
+        <a href="insights.html">Insights</a>
       </nav>
       <div class="profile">
         <p>Demo Developer</p>
-        <span>Last sync: 2 min</span>
+        <span id="last-sync">Last sync: 2 min</span>
       </div>
     </aside>
 
     <main class="dashboard">
-      <header class="dash-header">
+      <header class="dash-header" id="command">
         <div>
           <p class="eyebrow">Live Execution</p>
           <h1>Vertex Command Center</h1>
         </div>
         <div class="header-actions">
-          <button class="ghost">Sync Inputs</button>
-          <button>New Sprint</button>
+          <button class="ghost" data-action="sync">Sync Inputs</button>
+          <button data-action="sprint">New Sprint</button>
         </div>
       </header>
 
       <section class="grid">
-        <article class="card highlight">
+        <article class="card highlight" id="insights">
           <h2>Today's Execution Map</h2>
           <p>Fluid Time has auto-injected three sprints based on live gaps.</p>
-          <div class="timeline">
+          <div class="timeline" id="timeline">
             <div>
               <span>8:10</span>
               <strong>Physics: Momentum Nexus</strong>
@@ -64,17 +64,18 @@
           </div>
         </article>
 
-        <article class="card">
+        <article class="card" id="nexus">
           <h3>Nexus Prep Intake</h3>
           <p>Contextual scans queued for signal ingestion.</p>
-          <ul>
+          <p class="sync-status" id="sync-status">Last intake: 12m ago</p>
+          <ul id="intake-list">
             <li>Quiz 7 · 14/20 tagged</li>
             <li>Lab notes · 6 pages</li>
             <li>LMS export · 2 courses</li>
           </ul>
         </article>
 
-        <article class="card">
+        <article class="card" id="graph">
           <h3>Knowledge Graph</h3>
           <p>Top instability clusters.</p>
           <div class="graph">
@@ -85,7 +86,7 @@
           </div>
         </article>
 
-        <article class="card wide">
+        <article class="card wide" id="vector">
           <h3>Vector Planner</h3>
           <p>Adaptive schedule updated in real time.</p>
           <div class="planner">
