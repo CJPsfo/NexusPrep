@@ -51,6 +51,7 @@ const levelThreshold = {
 };
 
 let currentView = "day";
+const focusBlocks = [];
 
 const renderCalendar = (view) => {
   if (!calendarGrid) {
@@ -258,28 +259,67 @@ focusForm?.addEventListener("submit", (event) => {
   const priority = focusForm.priority.value;
   const notes = focusForm.notes.value.trim();
 
-  const empty = timeline.querySelector(".empty");
-  if (empty) {
-    empty.remove();
-  }
+  const block = {
+    title,
+    date,
+    time: time || formatTime(new Date()),
+    duration,
+    priority,
+    notes,
+  };
 
-  const row = document.createElement("div");
-  row.classList.add("new");
+  focusBlocks.unshift(block);
 
-  const timeStamp = document.createElement("span");
-  timeStamp.textContent = time ? time : formatTime(new Date());
+  const renderTimeline = () => {
+    if (!timeline) {
+      return;
+    }
+    timeline.innerHTML = "";
+    if (!focusBlocks.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "No focus blocks yet.";
+      timeline.appendChild(empty);
+      return;
+    }
 
-  const label = document.createElement("strong");
-  label.textContent = `${title} · ${duration}m`;
+    focusBlocks.forEach((item) => {
+      const row = document.createElement("div");
+      row.classList.add("new");
 
-  row.append(timeStamp, label);
-  timeline.prepend(row);
+      const timeStamp = document.createElement("span");
+      timeStamp.textContent = item.time;
 
-  if (planner) {
-    const plannerItem = document.createElement("div");
-    plannerItem.textContent = `${title} · ${duration}m · ${priority.toUpperCase()}`;
-    planner.prepend(plannerItem);
-  }
+      const label = document.createElement("strong");
+      label.textContent = `${item.title} · ${item.duration}m`;
+
+      row.append(timeStamp, label);
+      timeline.appendChild(row);
+    });
+  };
+
+  const renderPlanner = () => {
+    if (!planner) {
+      return;
+    }
+    planner.innerHTML = "";
+    if (!focusBlocks.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "No focus blocks scheduled yet.";
+      planner.appendChild(empty);
+      return;
+    }
+
+    focusBlocks.forEach((item) => {
+      const plannerItem = document.createElement("div");
+      plannerItem.textContent = `${item.title} · ${item.duration}m · ${item.priority.toUpperCase()}`;
+      planner.appendChild(plannerItem);
+    });
+  };
+
+  renderTimeline();
+  renderPlanner();
 
   calendarData.day.unshift({ label: title, level: priority });
   calendarData.week.unshift({ label: title, level: priority });
