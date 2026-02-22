@@ -29,6 +29,20 @@ const assignmentIdField = document.querySelector("#assignment-id");
 const assignmentTurnIn = document.querySelector("#assignment-turnin");
 const assignmentStatus = document.querySelector("#assignment-status");
 const assignmentCloseButtons = document.querySelectorAll("[data-assignment-close]");
+const nexusForm = document.querySelector("#nexus-form");
+const nexusSource = document.querySelector("#nexus-source");
+const nexusText = document.querySelector("#nexus-text");
+const nexusClearButton = document.querySelector("#nexus-clear");
+const nexusStatus = document.querySelector("#nexus-status");
+const nexusSignalList = document.querySelector("#nexus-signal-list");
+const nexusSuggestionList = document.querySelector("#nexus-suggestion-list");
+const aiSettingsForm = document.querySelector("#ai-settings-form");
+const aiProvider = document.querySelector("#ai-provider");
+const aiModel = document.querySelector("#ai-model");
+const aiApiKey = document.querySelector("#ai-api-key");
+const aiKeyEnabled = document.querySelector("#ai-key-enabled");
+const aiSettingsClearButton = document.querySelector("#ai-settings-clear");
+const aiSettingsStatus = document.querySelector("#ai-settings-status");
 
 const formatTime = (date) =>
   date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -58,6 +72,8 @@ const levelThreshold = {
 let currentView = "day";
 const STORAGE_KEY = "vertex_focus_blocks";
 const ASSIGNMENT_KEY = "vertex_assignments";
+const AI_SETTINGS_KEY = "vertex_ai_settings";
+const NEXUS_RUNS_KEY = "vertex_nexus_runs";
 
 const loadBlocks = () => {
   try {
@@ -88,6 +104,200 @@ const saveAssignments = (assignments) => {
 };
 
 let assignments = loadAssignments();
+
+const loadAiSettings = () => {
+  try {
+    const raw = localStorage.getItem(AI_SETTINGS_KEY);
+    return raw
+      ? JSON.parse(raw)
+      : { provider: "openai", model: "gpt-4.1-mini", apiKey: "", enabled: false };
+  } catch (error) {
+    return { provider: "openai", model: "gpt-4.1-mini", apiKey: "", enabled: false };
+  }
+};
+
+const saveAiSettings = (settings) => {
+  localStorage.setItem(AI_SETTINGS_KEY, JSON.stringify(settings));
+};
+
+let aiSettings = loadAiSettings();
+
+const loadNexusRuns = () => {
+  try {
+    const raw = localStorage.getItem(NEXUS_RUNS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveNexusRuns = (runs) => {
+  localStorage.setItem(NEXUS_RUNS_KEY, JSON.stringify(runs));
+};
+
+let nexusRuns = loadNexusRuns();
+
+const maskKey = (value) => {
+  if (!value) {
+    return "No key saved";
+  }
+  if (value.length <= 8) {
+    return "Saved";
+  }
+  return `${value.slice(0, 4)}...${value.slice(-4)}`;
+};
+
+const escapeHtml = (value) =>
+  String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+
+const parseDueDateFromText = (text) => {
+  if (!text) {
+    return "";
+  }
+
+  const isoMatch = text.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+  if (isoMatch) {
+    return isoMatch[1];
+  }
+
+  const slashMatch = text.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+  if (slashMatch) {
+    const now = new Date();
+    const month = String(Number(slashMatch[1])).padStart(2, "0");
+    const day = String(Number(slashMatch[2])).padStart(2, "0");
+    const yearRaw = slashMatch[3];
+    const year =
+      yearRaw && yearRaw.length === 2
+        ? `20${yearRaw}`
+        : yearRaw || String(now.getFullYear());
+    return `${year}-${month}-${day}`;
+  }
+
+  if (/\btomorrow\b/i.test(text)) {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().slice(0, 10);
+  }
+
+  return "";
+};
+
+const parseHoursFromText = (text, source) => {
+  const hoursMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:hours?|hrs?)/i);
+  if (hoursMatch) {
+    return Math.max(1, Math.round(Number(hoursMatch[1])));
+  }
+
+  const minutesMatch = text.match(/(\d+)\s*minutes?/i);
+  if (minutesMatch) {
+    return Math.max(1, Math.ceil(Number(minutesMatch[1]) / 60));
+  }
+
+  const defaults = {
+    assignment: 3,
+    syllabus: 2,
+    notes: 1,
+    exam: 4,
+  };
+  return defaults[source] || 2;
+};
+
+const parseTurnInType = (text) => {
+  if (/(paper copy|printed|hand in|physical)/i.test(text)) {
+    return "physical";
+  }
+  if (/(online|canvas|google classroom|upload|submit online)/i.test(text)) {
+    return "online";
+  }
+  return "online";
+};
+
+const parseTitleFromText = (text, source) => {
+  const firstLine = text
+    .split("\n")
+    .map((line) => line.trim())
+    .find(Boolean);
+  if (!firstLine) {
+    return source === "exam" ? "Exam Prep" : "Nexus Intake Item";
+  }
+
+  return firstLine.replace(/\.$/, "").slice(0, 80);
+};
+
+const inferPriorityFromDueDate = (dueDate) => {
+  if (!dueDate) {
+    return "medium";
+  }
+  const due = new Date(dueDate);
+  if (Number.isNaN(due.getTime())) {
+    return "medium";
+  }
+  const now = new Date();
+  const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 2) {
+    return "high";
+  }
+  if (diffDays <= 7) {
+    return "medium";
+  }
+  return "low";
+};
+
+const buildSuggestedSessions = (hours, dueDate, priority, assignmentTitle) => {
+  const totalMinutes = Math.max(60, Number(hours || 1) * 60);
+  const sessionMinutes = totalMinutes >= 180 ? 60 : 45;
+  const sessionCount = Math.max(1, Math.ceil(totalMinutes / sessionMinutes));
+  const now = new Date();
+  const due = dueDate ? new Date(dueDate) : null;
+  const spanDays =
+    due && !Number.isNaN(due.getTime())
+      ? Math.max(0, Math.min(14, Math.ceil((due - now) / (1000 * 60 * 60 * 24))))
+      : 0;
+
+  return Array.from({ length: sessionCount }, (_, index) => {
+    const date = new Date(now);
+    date.setDate(date.getDate() + Math.min(index, spanDays));
+    const hour = 16 + (index % 3);
+    date.setHours(hour, 0, 0, 0);
+
+    return {
+      date: date.toISOString().slice(0, 10),
+      time: `${String(hour).padStart(2, "0")}:00`,
+      duration: sessionMinutes,
+      priority,
+      title: `${assignmentTitle} · Focus`,
+    };
+  });
+};
+
+const createNexusSuggestion = (source, text) => {
+  const due = parseDueDateFromText(text);
+  const hours = parseHoursFromText(text, source);
+  const turnIn = parseTurnInType(text);
+  const title = parseTitleFromText(text, source);
+  const priority = inferPriorityFromDueDate(due);
+  const sessions = buildSuggestedSessions(hours, due, priority, title);
+
+  return {
+    id: crypto.randomUUID?.() || String(Date.now()),
+    source,
+    rawText: text,
+    createdAt: Date.now(),
+    assignment: {
+      title,
+      due: due || new Date().toISOString().slice(0, 10),
+      hours,
+      turnIn,
+      priority,
+    },
+    sessions,
+    appliedAssignmentId: "",
+    appliedBlockIds: [],
+  };
+};
 
 const renderCalendar = (view) => {
   if (!calendarGrid) {
@@ -655,12 +865,219 @@ const renderAssignmentList = () => {
   });
 };
 
+const renderAiSettings = () => {
+  if (!aiSettingsForm) {
+    return;
+  }
+
+  if (aiProvider) {
+    aiProvider.value = aiSettings.provider || "openai";
+  }
+  if (aiModel) {
+    aiModel.value = aiSettings.model || "gpt-4.1-mini";
+  }
+  if (aiApiKey) {
+    aiApiKey.value = aiSettings.apiKey || "";
+  }
+  if (aiKeyEnabled) {
+    aiKeyEnabled.checked = Boolean(aiSettings.enabled);
+  }
+
+  if (aiSettingsStatus) {
+    const enabledLabel =
+      aiSettings.enabled && aiSettings.apiKey
+        ? "API mode ready"
+        : "Local prep mode (no live API calls)";
+    aiSettingsStatus.textContent = `${enabledLabel} · ${maskKey(aiSettings.apiKey)}`;
+  }
+};
+
+const renderNexusSignals = () => {
+  if (!nexusSignalList) {
+    return;
+  }
+
+  nexusSignalList.innerHTML = "";
+  if (!nexusRuns.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No Nexus runs yet.";
+    nexusSignalList.appendChild(empty);
+    return;
+  }
+
+  nexusRuns.slice(0, 6).forEach((run) => {
+    const item = document.createElement("div");
+    item.className = "nexus-item";
+    item.innerHTML = `
+      <strong>${escapeHtml(run.assignment.title)}</strong>
+      <div class="block-meta">
+        <span>${escapeHtml(run.source)}</span>
+        <span>Due ${escapeHtml(run.assignment.due || "TBD")}</span>
+        <span>${escapeHtml(String(run.assignment.hours))}h estimate</span>
+        <span>${escapeHtml(run.assignment.turnIn)} turn-in</span>
+      </div>
+    `;
+    nexusSignalList.appendChild(item);
+  });
+};
+
+const addFocusBlock = (input) => {
+  const block = {
+    id: crypto.randomUUID?.() || String(Date.now() + Math.random()),
+    title: input.title || "Focus Block",
+    date: input.date || new Date().toISOString().slice(0, 10),
+    time: input.time || "16:00",
+    duration: String(input.duration || 60),
+    priority: input.priority || "medium",
+    notes: input.notes || "",
+    assignmentId: input.assignmentId || "",
+    assignmentTitle: input.assignmentTitle || "",
+    completed: Boolean(input.completed),
+    createdAt: Date.now(),
+  };
+  focusBlocks.unshift(block);
+  return block.id;
+};
+
+const addAssignment = (input) => {
+  const assignment = {
+    id: crypto.randomUUID?.() || String(Date.now() + Math.random()),
+    title: input.title || "Untitled Assignment",
+    due: input.due || new Date().toISOString().slice(0, 10),
+    hours: String(input.hours || 1),
+    turnIn: input.turnIn || "online",
+    createdAt: Date.now(),
+  };
+  assignments.unshift(assignment);
+  return assignment;
+};
+
+const applyNexusSuggestion = (runId, includeBlocks) => {
+  const runIndex = nexusRuns.findIndex((run) => run.id === runId);
+  if (runIndex < 0) {
+    return;
+  }
+
+  const run = nexusRuns[runIndex];
+  let assignment =
+    assignments.find((item) => item.id === run.appliedAssignmentId) || null;
+
+  if (!assignment) {
+    assignment = addAssignment({
+      title: run.assignment.title,
+      due: run.assignment.due,
+      hours: run.assignment.hours,
+      turnIn: run.assignment.turnIn,
+    });
+  }
+
+  const blockIds = [...(run.appliedBlockIds || [])];
+  if (includeBlocks && blockIds.length === 0) {
+    run.sessions.forEach((session) => {
+      const blockId = addFocusBlock({
+        title: session.title,
+        date: session.date,
+        time: session.time,
+        duration: session.duration,
+        priority: session.priority,
+        assignmentId: assignment.id,
+        assignmentTitle: assignment.title,
+        notes: "Created by Nexus Prep",
+      });
+      blockIds.push(blockId);
+    });
+  }
+
+  nexusRuns[runIndex] = {
+    ...run,
+    appliedAssignmentId: assignment.id,
+    appliedBlockIds: blockIds,
+  };
+
+  saveAssignments(assignments);
+  saveBlocks(focusBlocks);
+  saveNexusRuns(nexusRuns);
+  renderAll();
+
+  if (nexusStatus) {
+    nexusStatus.textContent = includeBlocks
+      ? "Assignment and focus blocks added to Vertex."
+      : "Assignment added to Vertex.";
+  }
+};
+
+const renderNexusSuggestions = () => {
+  if (!nexusSuggestionList) {
+    return;
+  }
+
+  nexusSuggestionList.innerHTML = "";
+  if (!nexusRuns.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "Run Nexus Prep to generate suggestions.";
+    nexusSuggestionList.appendChild(empty);
+    return;
+  }
+
+  nexusRuns.slice(0, 8).forEach((run) => {
+    const item = document.createElement("div");
+    item.className = "nexus-item";
+
+    const heading = document.createElement("strong");
+    heading.textContent = run.assignment.title;
+
+    const meta = document.createElement("div");
+    meta.className = "block-meta";
+    const turnInLabel = run.assignment.turnIn === "physical" ? "Physical" : "Online";
+    meta.textContent = `Due ${run.assignment.due} · ${run.assignment.hours}h · ${turnInLabel} turn-in · ${run.sessions.length} block suggestion(s)`;
+
+    const source = document.createElement("p");
+    source.className = "nexus-preview";
+    source.textContent = run.rawText.slice(0, 180);
+
+    const actions = document.createElement("div");
+    actions.className = "block-actions";
+
+    const addAssignmentButton = document.createElement("button");
+    addAssignmentButton.type = "button";
+    addAssignmentButton.textContent = "Create Assignment";
+    addAssignmentButton.addEventListener("click", () =>
+      applyNexusSuggestion(run.id, false)
+    );
+
+    const addAllButton = document.createElement("button");
+    addAllButton.type = "button";
+    addAllButton.className = "primary";
+    addAllButton.textContent = "Create + Schedule";
+    addAllButton.addEventListener("click", () =>
+      applyNexusSuggestion(run.id, true)
+    );
+
+    actions.append(addAssignmentButton, addAllButton);
+
+    if (run.appliedAssignmentId) {
+      const badge = document.createElement("div");
+      badge.className = "nexus-badge";
+      badge.textContent = "Synced to planner";
+      item.append(badge);
+    }
+
+    item.append(heading, meta, source, actions);
+    nexusSuggestionList.appendChild(item);
+  });
+};
+
 const renderAll = () => {
   renderTimeline();
   renderPlanner();
   renderBlockList();
   renderAssignmentList();
   renderAssignmentOptions();
+  renderAiSettings();
+  renderNexusSignals();
+  renderNexusSuggestions();
   renderCalendar(currentView);
 };
 
@@ -687,8 +1104,14 @@ const deleteAssignment = (id) => {
       ? { ...block, assignmentId: "", assignmentTitle: "" }
       : block
   );
+  nexusRuns = nexusRuns.map((run) =>
+    run.appliedAssignmentId === id
+      ? { ...run, appliedAssignmentId: "", appliedBlockIds: [] }
+      : run
+  );
   saveAssignments(assignments);
   saveBlocks(focusBlocks);
+  saveNexusRuns(nexusRuns);
   renderAll();
 };
 
@@ -780,6 +1203,72 @@ assignmentForm?.addEventListener("submit", (event) => {
 
   if (focusAssignment) {
     focusAssignment.value = assignment.id;
+  }
+});
+
+nexusClearButton?.addEventListener("click", () => {
+  if (nexusForm) {
+    nexusForm.reset();
+  }
+  if (nexusStatus) {
+    nexusStatus.textContent = "Nexus intake cleared.";
+  }
+});
+
+nexusForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const source = nexusSource?.value || "assignment";
+  const text = (nexusText?.value || "").trim();
+  if (!text) {
+    if (nexusStatus) {
+      nexusStatus.textContent = "Paste some intake text first.";
+    }
+    return;
+  }
+
+  const suggestion = createNexusSuggestion(source, text);
+  nexusRuns.unshift(suggestion);
+  nexusRuns = nexusRuns.slice(0, 20);
+  saveNexusRuns(nexusRuns);
+  renderAll();
+
+  if (nexusStatus) {
+    nexusStatus.textContent =
+      aiSettings.enabled && aiSettings.apiKey
+        ? "Nexus Prep ran in AI-ready mode (local fallback parser currently active)."
+        : "Nexus Prep ran in local parser mode. Add an API key later to enable live AI.";
+  }
+});
+
+aiSettingsClearButton?.addEventListener("click", () => {
+  aiSettings = {
+    provider: "openai",
+    model: "gpt-4.1-mini",
+    apiKey: "",
+    enabled: false,
+  };
+  saveAiSettings(aiSettings);
+  renderAll();
+});
+
+aiSettingsForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  aiSettings = {
+    provider: aiProvider?.value || "openai",
+    model: aiModel?.value.trim() || "gpt-4.1-mini",
+    apiKey: aiApiKey?.value.trim() || "",
+    enabled: Boolean(aiKeyEnabled?.checked),
+  };
+
+  saveAiSettings(aiSettings);
+  renderAll();
+
+  if (aiSettingsStatus) {
+    aiSettingsStatus.textContent = aiSettings.apiKey
+      ? `Settings saved · ${maskKey(aiSettings.apiKey)}`
+      : "Settings saved · no API key configured";
   }
 });
 

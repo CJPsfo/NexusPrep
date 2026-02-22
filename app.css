@@ -299,6 +299,73 @@ body {
   color: var(--muted);
 }
 
+.nexus-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.nexus-form textarea,
+.nexus-form input,
+.nexus-form select {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+}
+
+.nexus-form textarea {
+  resize: vertical;
+}
+
+.nexus-form textarea:focus,
+.nexus-form input:focus,
+.nexus-form select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(27, 91, 255, 0.16);
+}
+
+.nexus-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.nexus-item {
+  display: grid;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.nexus-preview {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.nexus-badge {
+  justify-self: start;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 4px 10px;
+  border: 1px solid rgba(27, 91, 255, 0.22);
+  background: rgba(27, 91, 255, 0.08);
+  color: var(--accent-2);
+}
+
+.nexus-item .block-actions {
+  flex-wrap: wrap;
+}
+
 .grid {
   margin-top: 32px;
   display: grid;
@@ -617,6 +684,16 @@ body {
 
   .dashboard {
     padding: 24px;
+  }
+
+  .assignment-row {
+    grid-template-columns: 1fr;
+  }
+
+  .block-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
   }
 }
 

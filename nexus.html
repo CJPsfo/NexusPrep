@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vertex | Command Center</title>
+    <title>Vertex | Nexus Prep</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,8 +20,8 @@
         <span>Vertex</span>
       </div>
       <nav>
-        <a class="active" href="app.html">Command Center</a>
-        <a href="nexus.html">Nexus Prep</a>
+        <a href="app.html">Command Center</a>
+        <a class="active" href="nexus.html">Nexus Prep</a>
         <a href="insights.html">Insights</a>
       </nav>
       <div class="profile">
@@ -32,68 +32,93 @@
     </aside>
 
     <main class="dashboard">
-      <header class="dash-header" id="command">
+      <header class="dash-header">
         <div>
-          <p class="eyebrow">Live Execution</p>
-          <h1>Vertex Command Center</h1>
+          <p class="eyebrow">Intake + AI</p>
+          <h1>Nexus Prep</h1>
         </div>
         <div class="header-actions">
-          <button class="ghost" data-action="sync">Sync Inputs</button>
           <button class="ghost" data-action="assignment">New Assignment</button>
           <button data-action="focus">New Focus Block</button>
         </div>
       </header>
 
       <section class="grid">
-        <article class="card highlight" id="insights">
-          <h2>Today's Execution Map</h2>
-          <p>Focus blocks will appear here once you schedule them.</p>
-          <div class="timeline" id="timeline">
-            <div class="empty">No focus blocks yet.</div>
-          </div>
+        <article class="card highlight">
+          <h2>Cognitive Synthesis Intake</h2>
+          <p>Upload or paste study material, assignment briefs, and notes. Nexus Prep extracts assignments, estimates difficulty, and prepares study actions you can schedule.</p>
+          <form class="nexus-form" id="nexus-form">
+            <label for="nexus-source">Source type</label>
+            <select id="nexus-source" name="source">
+              <option value="assignment">Assignment brief</option>
+              <option value="syllabus">Syllabus / LMS export</option>
+              <option value="notes">Notes / topic prompt</option>
+              <option value="exam">Exam prep</option>
+            </select>
+
+            <label for="nexus-text">Raw input</label>
+            <textarea id="nexus-text" name="text" rows="8" placeholder="Example: AP Biology FRQ packet due 2026-03-01. Estimated 4 hours. Online submission. Quiz me on cellular respiration and rate difficulty."></textarea>
+
+            <div class="modal-actions">
+              <button class="ghost" type="button" id="nexus-clear">Clear</button>
+              <button type="submit">Run Nexus Prep</button>
+            </div>
+            <p class="modal-status" id="nexus-status">Local Nexus parser is active. Add an API key below later to enable live AI synthesis.</p>
+          </form>
         </article>
 
         <article class="card">
-          <h3>Calendar Intake</h3>
-          <p>Commitments will appear after you add them.</p>
-          <p class="sync-status" id="sync-status">Last intake: none</p>
-          <ul id="intake-list"></ul>
+          <h3>Nexus AI Settings</h3>
+          <p>Save provider + API key locally for future Nexus Prep features like difficulty analysis, quiz generation, and study synthesis.</p>
+          <form class="nexus-form" id="ai-settings-form" autocomplete="off">
+            <label for="ai-provider">Provider</label>
+            <select id="ai-provider" name="provider">
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="custom">Custom</option>
+            </select>
+
+            <label for="ai-model">Model</label>
+            <input id="ai-model" name="model" type="text" placeholder="gpt-4.1-mini" />
+
+            <label for="ai-api-key">API Key (saved in this browser)</label>
+            <input id="ai-api-key" name="apiKey" type="password" placeholder="Paste later" />
+
+            <label class="checkbox-row" for="ai-key-enabled">
+              <input id="ai-key-enabled" name="enabled" type="checkbox" />
+              Enable API mode when key is present
+            </label>
+
+            <div class="modal-actions">
+              <button class="ghost" type="button" id="ai-settings-clear">Clear</button>
+              <button type="submit">Save Settings</button>
+            </div>
+            <p class="modal-status" id="ai-settings-status">No API key configured yet.</p>
+          </form>
         </article>
 
         <article class="card">
-          <h3>Assignments</h3>
-          <p>Create assignments and attach focus blocks.</p>
-          <div class="assignment-list" id="assignment-list"></div>
+          <h3>Difficulty Signals</h3>
+          <p>Parsed study signals from recent Nexus Prep runs.</p>
+          <div class="nexus-list" id="nexus-signal-list"></div>
         </article>
 
         <article class="card">
-          <h3>Priority Stack</h3>
-          <p>Highest-impact work will populate here.</p>
+          <h3>Core Capabilities</h3>
+          <p>Nexus Prep is the study intelligence layer in Vertex.</p>
           <div class="graph">
-            <span>No priorities yet</span>
+            <span>Upload study material</span>
+            <span>Difficulty analysis</span>
+            <span>Assignment extraction</span>
+            <span>Quiz-ready synthesis</span>
+            <span>Focus block suggestions</span>
           </div>
         </article>
 
-        <article class="card wide" id="nexus-plan">
-          <h3>Nexus Study Plan</h3>
-          <p>Generated focus blocks and study sequencing appear here.</p>
-          <div class="planner">
-            <div class="empty">No focus blocks scheduled yet.</div>
-          </div>
-        </article>
-
-        <article class="card">
-          <h3>Alerts</h3>
-          <p>No alerts yet.</p>
-        </article>
-
-        <article class="card">
-          <h3>Execution Score</h3>
-          <p>Score appears after your first week.</p>
-          <div class="score">
-            <strong>--</strong>
-            <span>No data yet</span>
-          </div>
+        <article class="card wide">
+          <h3>Nexus Suggestions</h3>
+          <p>Convert Nexus Prep outputs into assignments and linked focus blocks. Quiz workflows can be added later using your API key.</p>
+          <div class="nexus-list" id="nexus-suggestion-list"></div>
         </article>
       </section>
     </main>
@@ -157,9 +182,9 @@
 
           <div class="modal-actions">
             <button class="ghost" type="button" data-modal-close>Cancel</button>
-            <button type="submit">Add Focus Block</button>
+            <button type="submit">Save Focus Block</button>
           </div>
-          <p class="modal-status" id="focus-status">Blocks appear immediately in your timeline.</p>
+          <p class="modal-status" id="focus-status">Blocks appear immediately in your planner.</p>
         </form>
       </div>
     </div>

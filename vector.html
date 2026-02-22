@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Vertex | Vector Planner</title>
+    <title>Vertex | Redirecting to Nexus Prep</title>
+    <meta http-equiv="refresh" content="0; url=nexus.html" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -11,178 +12,18 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="app.css" />
+    <script>
+      window.location.replace("nexus.html");
+    </script>
   </head>
-  <body class="requires-auth">
-    <div class="bg-orbit"></div>
-    <aside class="sidebar">
-      <div class="logo">
-        <span class="logo-mark">Vx</span>
-        <span>Vertex</span>
-      </div>
-      <nav>
-        <a href="app.html">Command Center</a>
-        <a class="active" href="vector.html">Vector Planner</a>
-        <a href="insights.html">Insights</a>
-      </nav>
-      <div class="profile">
-        <p id="profile-name">Signed out</p>
-        <span id="last-sync">Last sync: none</span>
-      </div>
-    </aside>
-
-    <main class="dashboard">
-      <header class="dash-header">
-        <div>
-          <p class="eyebrow">Scheduling</p>
-          <h1>Vector Planner</h1>
-        </div>
-        <div class="header-actions">
-          <button class="ghost" data-action="assignment">New Assignment</button>
-          <button data-action="focus">New Focus Block</button>
-        </div>
-      </header>
-
-      <section class="grid">
-        <article class="card highlight">
-          <h2>Vector Calendar</h2>
-          <p>Zoom from day to year while filtering low-priority noise.</p>
-          <div class="calendar-controls">
-            <button class="chip active" data-view="day">Day</button>
-            <button class="chip" data-view="week">Week</button>
-            <button class="chip" data-view="month">Month</button>
-            <button class="chip" data-view="year">Year</button>
-          </div>
-          <div class="calendar-grid" id="calendar-grid"></div>
-        </article>
-
-        <article class="card">
-          <h3>Load Balance</h3>
-          <p>No load data yet.</p>
-          <div class="graph">
-            <span>Awaiting schedule</span>
-          </div>
-        </article>
-
-        <article class="card">
-          <h3>Focus Blocks</h3>
-          <p>All scheduled blocks across your planner.</p>
-          <div class="block-list" id="block-list"></div>
-        </article>
-
-        <article class="card">
-          <h3>Schedule Conflicts</h3>
-          <p>No conflicts detected.</p>
-        </article>
+  <body>
+    <main class="dashboard" style="display:grid;place-items:center;min-height:100vh;">
+      <section class="card" style="max-width:560px;">
+        <p class="eyebrow">Redirect</p>
+        <h1>Nexus Prep</h1>
+        <p>This route has been retired. Redirecting to Nexus Prep.</p>
+        <p><a href="nexus.html">Continue to Nexus Prep</a></p>
       </section>
     </main>
-
-    <div class="modal" id="focus-modal" aria-hidden="true">
-      <div class="modal-backdrop" data-modal-close></div>
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="focus-modal-title">
-        <div class="modal-head">
-          <div>
-            <p class="eyebrow">Focus Block</p>
-            <h2 id="focus-modal-title">Add a Focus Block</h2>
-          </div>
-          <button class="ghost" type="button" data-modal-close>Close</button>
-        </div>
-        <form id="focus-form" class="modal-form">
-          <input type="hidden" id="focus-id" name="id" />
-          <label for="focus-title">Title</label>
-          <input id="focus-title" name="title" type="text" placeholder="Deep work session" required />
-
-          <div class="modal-row">
-            <div>
-              <label for="focus-date">Date</label>
-              <input id="focus-date" name="date" type="date" required />
-            </div>
-            <div>
-              <label for="focus-time">Start time</label>
-              <input id="focus-time" name="time" type="time" required />
-            </div>
-          </div>
-
-          <div class="modal-row">
-            <div>
-              <label for="focus-duration">Duration (minutes)</label>
-              <input id="focus-duration" name="duration" type="number" min="15" max="240" step="15" value="60" required />
-            </div>
-            <div>
-              <label for="focus-priority">Priority</label>
-              <select id="focus-priority" name="priority">
-                <option value="high">High</option>
-                <option value="medium" selected>Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-          </div>
-
-          <label for="focus-notes">Notes</label>
-          <textarea id="focus-notes" name="notes" rows="3" placeholder="Optional context"></textarea>
-
-          <div>
-            <label for="focus-assignment">Assignment</label>
-            <div class="assignment-row">
-              <select id="focus-assignment" name="assignment"></select>
-              <button class="ghost" type="button" data-action="assignment">New Assignment</button>
-            </div>
-          </div>
-
-          <label class="checkbox-row" for="focus-completed">
-            <input id="focus-completed" name="completed" type="checkbox" />
-            Mark this focus block as completed
-          </label>
-
-          <div class="modal-actions">
-            <button class="ghost" type="button" data-modal-close>Cancel</button>
-            <button type="submit">Save Focus Block</button>
-          </div>
-          <p class="modal-status" id="focus-status">Blocks appear immediately in your planner.</p>
-        </form>
-      </div>
-    </div>
-
-    <div class="modal" id="assignment-modal" aria-hidden="true">
-      <div class="modal-backdrop" data-assignment-close></div>
-      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="assignment-modal-title">
-        <div class="modal-head">
-          <div>
-            <p class="eyebrow">Assignment</p>
-            <h2 id="assignment-modal-title">Add an Assignment</h2>
-          </div>
-          <button class="ghost" type="button" data-assignment-close>Close</button>
-        </div>
-        <form id="assignment-form" class="modal-form">
-          <input type="hidden" id="assignment-id" name="id" />
-          <label for="assignment-title">Assignment title</label>
-          <input id="assignment-title" name="title" type="text" placeholder="AP Calculus problem set" required />
-
-          <div class="modal-row">
-            <div>
-              <label for="assignment-due">Due date</label>
-              <input id="assignment-due" name="due" type="date" required />
-            </div>
-            <div>
-              <label for="assignment-hours">Estimated hours</label>
-              <input id="assignment-hours" name="hours" type="number" min="1" max="40" step="1" value="4" required />
-            </div>
-          </div>
-
-          <label for="assignment-turnin">Turn-in type</label>
-          <select id="assignment-turnin" name="turnin">
-            <option value="online">Online</option>
-            <option value="physical">Physical</option>
-          </select>
-
-          <div class="modal-actions">
-            <button class="ghost" type="button" data-assignment-close>Cancel</button>
-            <button type="submit">Save Assignment</button>
-          </div>
-          <p class="modal-status" id="assignment-status">Assignments sync across all pages.</p>
-        </form>
-      </div>
-    </div>
-
-    <script src="app.js"></script>
   </body>
 </html>

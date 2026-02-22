@@ -16,7 +16,7 @@ form.addEventListener("submit", async (event) => {
       "vertex_demo_auth",
       JSON.stringify({ email, signedInAt: Date.now() })
     );
-    window.location.href = "app.html";
+    window.location.href = "nexus.html";
     return;
   }
 
