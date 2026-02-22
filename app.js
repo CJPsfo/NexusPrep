@@ -14,6 +14,7 @@ const calendarGrid = document.querySelector("#calendar-grid");
 const calendarTabs = document.querySelectorAll("[data-view]");
 const profileName = document.querySelector("#profile-name");
 const logoutButton = document.querySelector("#logout");
+const themeToggle = document.querySelector("#theme-toggle");
 const navLinks = document.querySelectorAll(".sidebar nav a");
 const requiresAuth = document.body.classList.contains("requires-auth");
 const focusModal = document.querySelector("#focus-modal");
@@ -26,6 +27,9 @@ const modalCloseButtons = document.querySelectorAll("[data-modal-close]");
 const assignmentModal = document.querySelector("#assignment-modal");
 const assignmentForm = document.querySelector("#assignment-form");
 const assignmentIdField = document.querySelector("#assignment-id");
+const assignmentCourse = document.querySelector("#assignment-course");
+const assignmentKind = document.querySelector("#assignment-kind");
+const assignmentDifficulty = document.querySelector("#assignment-difficulty");
 const assignmentTurnIn = document.querySelector("#assignment-turnin");
 const assignmentStatus = document.querySelector("#assignment-status");
 const assignmentCloseButtons = document.querySelectorAll("[data-assignment-close]");
@@ -36,6 +40,23 @@ const nexusClearButton = document.querySelector("#nexus-clear");
 const nexusStatus = document.querySelector("#nexus-status");
 const nexusSignalList = document.querySelector("#nexus-signal-list");
 const nexusSuggestionList = document.querySelector("#nexus-suggestion-list");
+const nexusReadinessValue = document.querySelector("#nexus-readiness-score strong");
+const nexusReadinessLabel = document.querySelector("#nexus-readiness-score span");
+const courseFileForm = document.querySelector("#course-file-form");
+const courseFileCourse = document.querySelector("#course-file-course");
+const courseFileKind = document.querySelector("#course-file-kind");
+const courseFileInput = document.querySelector("#course-file-input");
+const courseFileClearButton = document.querySelector("#course-file-clear");
+const courseFileStatus = document.querySelector("#course-file-status");
+const courseFileList = document.querySelector("#course-file-list");
+const cadenceStatusSummary = document.querySelector("#cadence-status-summary");
+const cadenceModeDisplay = document.querySelector("#cadence-mode-display");
+const cadenceEndpointDisplay = document.querySelector("#cadence-endpoint-display");
+const cadenceProjectDisplay = document.querySelector("#cadence-project-display");
+const cadenceQueueCount = document.querySelector("#cadence-queue-count");
+const cadenceLastExport = document.querySelector("#cadence-last-export");
+const cadenceExportButton = document.querySelector("#cadence-export-json");
+const cadenceClearButton = document.querySelector("#cadence-clear-queue");
 const aiSettingsForm = document.querySelector("#ai-settings-form");
 const aiProvider = document.querySelector("#ai-provider");
 const aiModel = document.querySelector("#ai-model");
@@ -43,6 +64,17 @@ const aiApiKey = document.querySelector("#ai-api-key");
 const aiKeyEnabled = document.querySelector("#ai-key-enabled");
 const aiSettingsClearButton = document.querySelector("#ai-settings-clear");
 const aiSettingsStatus = document.querySelector("#ai-settings-status");
+const aiProviderDisplay = document.querySelector("#ai-provider-display");
+const aiModelDisplay = document.querySelector("#ai-model-display");
+const aiModeDisplay = document.querySelector("#ai-mode-display");
+const aiKeySourceDisplay = document.querySelector("#ai-key-source-display");
+const quizForm = document.querySelector("#quiz-form");
+const quizTopic = document.querySelector("#quiz-topic");
+const quizCount = document.querySelector("#quiz-count");
+const quizStyle = document.querySelector("#quiz-style");
+const quizClearButton = document.querySelector("#quiz-clear");
+const quizStatus = document.querySelector("#quiz-status");
+const quizList = document.querySelector("#quiz-list");
 
 const formatTime = (date) =>
   date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -74,6 +106,10 @@ const STORAGE_KEY = "vertex_focus_blocks";
 const ASSIGNMENT_KEY = "vertex_assignments";
 const AI_SETTINGS_KEY = "vertex_ai_settings";
 const NEXUS_RUNS_KEY = "vertex_nexus_runs";
+const QUIZ_RUNS_KEY = "vertex_quiz_runs";
+const COURSE_FILES_KEY = "vertex_course_files";
+const CADENCE_QUEUE_KEY = "vertex_cadence_queue";
+const THEME_KEY = "vertex_theme";
 
 const loadBlocks = () => {
   try {
@@ -106,13 +142,22 @@ const saveAssignments = (assignments) => {
 let assignments = loadAssignments();
 
 const loadAiSettings = () => {
+  const developerConfig = window.VERTEX_NEXUS_AI_CONFIG || {};
+  const base = {
+    provider: developerConfig.provider || "openai",
+    model: developerConfig.model || "gpt-4.1-mini",
+    apiKey: developerConfig.apiKey || "",
+    enabled:
+      typeof developerConfig.enabled === "boolean"
+        ? developerConfig.enabled
+        : Boolean(developerConfig.apiKey),
+  };
+
   try {
     const raw = localStorage.getItem(AI_SETTINGS_KEY);
-    return raw
-      ? JSON.parse(raw)
-      : { provider: "openai", model: "gpt-4.1-mini", apiKey: "", enabled: false };
+    return raw ? { ...base, ...JSON.parse(raw) } : base;
   } catch (error) {
-    return { provider: "openai", model: "gpt-4.1-mini", apiKey: "", enabled: false };
+    return base;
   }
 };
 
@@ -137,6 +182,63 @@ const saveNexusRuns = (runs) => {
 
 let nexusRuns = loadNexusRuns();
 
+const loadQuizRuns = () => {
+  try {
+    const raw = localStorage.getItem(QUIZ_RUNS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveQuizRuns = (runs) => {
+  localStorage.setItem(QUIZ_RUNS_KEY, JSON.stringify(runs));
+};
+
+let quizRuns = loadQuizRuns();
+
+const loadCourseFiles = () => {
+  try {
+    const raw = localStorage.getItem(COURSE_FILES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveCourseFiles = (files) => {
+  localStorage.setItem(COURSE_FILES_KEY, JSON.stringify(files));
+};
+
+let courseFiles = loadCourseFiles();
+
+const loadCadenceQueue = () => {
+  try {
+    const raw = localStorage.getItem(CADENCE_QUEUE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    return [];
+  }
+};
+
+const saveCadenceQueue = (queue) => {
+  localStorage.setItem(CADENCE_QUEUE_KEY, JSON.stringify(queue));
+};
+
+let cadenceQueue = loadCadenceQueue();
+
+const loadCadenceConfig = () => {
+  const developerConfig = window.VERTEX_CADENCE_CONFIG || {};
+  return {
+    enabled: Boolean(developerConfig.enabled),
+    mode: developerConfig.mode || "queue-export",
+    endpoint: developerConfig.endpoint || "",
+    projectId: developerConfig.projectId || "",
+  };
+};
+
+const cadenceConfig = loadCadenceConfig();
+
 const maskKey = (value) => {
   if (!value) {
     return "No key saved";
@@ -152,6 +254,161 @@ const escapeHtml = (value) =>
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
+
+const formatBytes = (value) => {
+  const bytes = Number(value || 0);
+  if (!bytes) {
+    return "0 B";
+  }
+  const units = ["B", "KB", "MB", "GB"];
+  const level = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
+  const size = bytes / 1024 ** level;
+  return `${size >= 10 || level === 0 ? Math.round(size) : size.toFixed(1)} ${units[level]}`;
+};
+
+const isTextLikeFile = (file) => {
+  const name = (file?.name || "").toLowerCase();
+  const type = (file?.type || "").toLowerCase();
+  return (
+    type.startsWith("text/") ||
+    type.includes("json") ||
+    type.includes("xml") ||
+    name.endsWith(".txt") ||
+    name.endsWith(".md") ||
+    name.endsWith(".csv") ||
+    name.endsWith(".json")
+  );
+};
+
+const inferNexusSourceFromDocKind = (kind) => {
+  if (kind === "syllabus") {
+    return "syllabus";
+  }
+  if (kind === "notes" || kind === "reading") {
+    return "notes";
+  }
+  return "assignment";
+};
+
+const normalizeText = (value) => String(value || "").trim().toLowerCase();
+
+const buildCadencePayloadFromRun = (run) => {
+  if (!run) {
+    return null;
+  }
+
+  const linkedAssignment =
+    assignments.find((item) => item.id === run.appliedAssignmentId) || null;
+  const linkedBlocks = (run.appliedBlockIds || [])
+    .map((id) => focusBlocks.find((block) => block.id === id))
+    .filter(Boolean);
+
+  const assignment = linkedAssignment || run.assignment;
+  const sessionObjects = linkedBlocks.length
+    ? linkedBlocks.map((block) => ({
+        id: block.id,
+        title: block.title,
+        date: block.date,
+        time: block.time,
+        duration: Number(block.duration || 0),
+        priority: block.priority || "medium",
+        completed: Boolean(block.completed),
+        assignmentId: block.assignmentId || "",
+      }))
+    : (run.sessions || []).map((session) => ({
+        title: session.title,
+        date: session.date,
+        time: session.time,
+        duration: Number(session.duration || 0),
+        priority: session.priority || "medium",
+        completed: false,
+      }));
+
+  const relatedCourseFiles = courseFiles
+    .filter((file) => {
+      const sameCourse =
+        normalizeText(file.course) &&
+        normalizeText(file.course) === normalizeText(assignment.course);
+      const likelyRelevant =
+        !normalizeText(assignment.course) &&
+        ["syllabus", "assignment", "rubric", "reading", "notes"].includes(file.kind);
+      return sameCourse || likelyRelevant;
+    })
+    .slice(0, 12)
+    .map((file) => ({
+      id: file.id,
+      name: file.name,
+      kind: file.kind,
+      course: file.course || "",
+      size: file.size || 0,
+      type: file.type || "unknown",
+      uploadedAt: file.uploadedAt,
+      previewText: (file.textSnippet || "").slice(0, 240),
+    }));
+
+  return {
+    id: crypto.randomUUID?.() || String(Date.now()),
+    schemaVersion: "vertex.cadence.handoff.v1",
+    sourceProduct: "nexus-prep",
+    createdAt: Date.now(),
+    nexusRunId: run.id,
+    assignment: {
+      title: assignment.title || "Untitled Assignment",
+      course: assignment.course || "",
+      kind: assignment.kind || "homework",
+      difficulty: assignment.difficulty || "medium",
+      due: assignment.due || "",
+      hours: Number(assignment.hours || 0),
+      turnIn: assignment.turnIn || "online",
+      priority: assignment.priority || inferPriorityFromDueDate(assignment.due || ""),
+    },
+    scheduleCandidates: sessionObjects,
+    contextFiles: relatedCourseFiles,
+    diagnostics: {
+      source: run.source || "assignment",
+      rawIntakePreview: (run.rawText || "").slice(0, 600),
+      hasLinkedVertexAssignment: Boolean(run.appliedAssignmentId),
+      hasLinkedVertexBlocks: linkedBlocks.length > 0,
+    },
+    sync: {
+      mode: cadenceConfig.mode,
+      status: "queued",
+      exportedAt: null,
+    },
+  };
+};
+
+const readFileSnippet = async (file) => {
+  if (!file || !isTextLikeFile(file) || typeof file.text !== "function") {
+    return { text: "", canPreview: false };
+  }
+
+  try {
+    const fullText = await file.text();
+    const cleaned = fullText.replace(/\s+/g, " ").trim();
+    return {
+      text: cleaned.slice(0, 12000),
+      canPreview: true,
+    };
+  } catch (error) {
+    return { text: "", canPreview: false };
+  }
+};
+
+const applyTheme = (theme) => {
+  const nextTheme = theme === "dark" ? "dark" : "light";
+  document.body.classList.toggle("theme-dark", nextTheme === "dark");
+  localStorage.setItem(THEME_KEY, nextTheme);
+  if (themeToggle) {
+    themeToggle.textContent = nextTheme === "dark" ? "Light Mode" : "Dark Mode";
+    themeToggle.setAttribute("aria-pressed", String(nextTheme === "dark"));
+  }
+};
+
+const initTheme = () => {
+  const savedTheme = localStorage.getItem(THEME_KEY) || "light";
+  applyTheme(savedTheme);
+};
 
 const parseDueDateFromText = (text) => {
   if (!text) {
@@ -215,6 +472,51 @@ const parseTurnInType = (text) => {
   return "online";
 };
 
+const parseCourseFromText = (text) => {
+  const coursePatterns = [
+    /AP\s+[A-Za-z ]+/,
+    /(Organic Chemistry|Biology|Chemistry|Physics|Calculus|History|English|Statistics)/i,
+  ];
+
+  for (const pattern of coursePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return match[0].trim();
+    }
+  }
+
+  return "";
+};
+
+const parseAssignmentKind = (text, source) => {
+  if (/quiz/i.test(text)) {
+    return "quiz";
+  }
+  if (/(exam|test)/i.test(text) || source === "exam") {
+    return "exam";
+  }
+  if (/essay/i.test(text)) {
+    return "essay";
+  }
+  if (/lab/i.test(text)) {
+    return "lab";
+  }
+  if (/project/i.test(text)) {
+    return "project";
+  }
+  return "homework";
+};
+
+const parseDifficulty = (text) => {
+  if (/(very hard|hard|difficult|advanced)/i.test(text)) {
+    return "hard";
+  }
+  if (/(easy|simple|review)/i.test(text)) {
+    return "easy";
+  }
+  return "medium";
+};
+
 const parseTitleFromText = (text, source) => {
   const firstLine = text
     .split("\n")
@@ -246,8 +548,19 @@ const inferPriorityFromDueDate = (dueDate) => {
   return "low";
 };
 
-const buildSuggestedSessions = (hours, dueDate, priority, assignmentTitle) => {
-  const totalMinutes = Math.max(60, Number(hours || 1) * 60);
+const buildSuggestedSessions = (
+  hours,
+  dueDate,
+  priority,
+  assignmentTitle,
+  difficulty = "medium"
+) => {
+  const difficultyMultiplier =
+    difficulty === "hard" ? 1.25 : difficulty === "easy" ? 0.8 : 1;
+  const totalMinutes = Math.max(
+    60,
+    Math.round(Number(hours || 1) * 60 * difficultyMultiplier)
+  );
   const sessionMinutes = totalMinutes >= 180 ? 60 : 45;
   const sessionCount = Math.max(1, Math.ceil(totalMinutes / sessionMinutes));
   const now = new Date();
@@ -277,9 +590,12 @@ const createNexusSuggestion = (source, text) => {
   const due = parseDueDateFromText(text);
   const hours = parseHoursFromText(text, source);
   const turnIn = parseTurnInType(text);
+  const course = parseCourseFromText(text);
+  const kind = parseAssignmentKind(text, source);
+  const difficulty = parseDifficulty(text);
   const title = parseTitleFromText(text, source);
   const priority = inferPriorityFromDueDate(due);
-  const sessions = buildSuggestedSessions(hours, due, priority, title);
+  const sessions = buildSuggestedSessions(hours, due, priority, title, difficulty);
 
   return {
     id: crypto.randomUUID?.() || String(Date.now()),
@@ -290,13 +606,63 @@ const createNexusSuggestion = (source, text) => {
       title,
       due: due || new Date().toISOString().slice(0, 10),
       hours,
+      course,
+      kind,
+      difficulty,
       turnIn,
       priority,
     },
     sessions,
     appliedAssignmentId: "",
     appliedBlockIds: [],
+    cadenceQueueId: "",
+    cadenceQueuedAt: 0,
   };
+};
+
+const quizTemplates = {
+  "multiple-choice": [
+    (topic, index) => ({
+      type: "MC",
+      question: `Which statement best describes ${topic} concept ${index + 1}?`,
+      answer: "Review your notes and identify the most accurate definition.",
+    }),
+    (topic, index) => ({
+      type: "MC",
+      question: `Which example is the strongest application of ${topic}?`,
+      answer: "Choose the option that matches the core mechanism, not surface details.",
+    }),
+  ],
+  "short-answer": [
+    (topic, index) => ({
+      type: "SA",
+      question: `Explain ${topic} in your own words (prompt ${index + 1}).`,
+      answer: "Define it, name the key steps/components, and give one example.",
+    }),
+    (topic, index) => ({
+      type: "SA",
+      question: `What is one common mistake students make with ${topic}?`,
+      answer: "Identify the misconception and correct it with the proper rule or process.",
+    }),
+  ],
+};
+
+const generateQuizQuestions = (topic, count, style) => {
+  const normalizedTopic = topic.trim() || "this topic";
+  const modes =
+    style === "mixed"
+      ? ["multiple-choice", "short-answer"]
+      : [style || "mixed"];
+
+  return Array.from({ length: count }, (_, index) => {
+    const mode = modes[index % modes.length];
+    const templates = quizTemplates[mode] || quizTemplates["short-answer"];
+    const template = templates[index % templates.length];
+    return {
+      id: crypto.randomUUID?.() || String(Date.now() + index),
+      ...template(normalizedTopic, index),
+    };
+  });
 };
 
 const renderCalendar = (view) => {
@@ -551,6 +917,15 @@ const openAssignmentModal = (assignment) => {
     assignmentForm.title.value = assignment.title;
     assignmentForm.due.value = assignment.due || dateValue;
     assignmentForm.hours.value = assignment.hours || 4;
+    if (assignmentCourse) {
+      assignmentCourse.value = assignment.course || "";
+    }
+    if (assignmentKind) {
+      assignmentKind.value = assignment.kind || "homework";
+    }
+    if (assignmentDifficulty) {
+      assignmentDifficulty.value = assignment.difficulty || "medium";
+    }
     if (assignmentTurnIn) {
       assignmentTurnIn.value = assignment.turnIn || "online";
     }
@@ -561,6 +936,15 @@ const openAssignmentModal = (assignment) => {
   } else {
     assignmentForm.reset();
     assignmentForm.due.value = dateValue;
+    if (assignmentCourse) {
+      assignmentCourse.value = "";
+    }
+    if (assignmentKind) {
+      assignmentKind.value = "homework";
+    }
+    if (assignmentDifficulty) {
+      assignmentDifficulty.value = "medium";
+    }
     if (assignmentTurnIn) {
       assignmentTurnIn.value = "online";
     }
@@ -578,10 +962,16 @@ assignmentButtons.forEach((button) => {
   button.addEventListener("click", () => openAssignmentModal());
 });
 
+themeToggle?.addEventListener("click", () => {
+  const isDark = document.body.classList.contains("theme-dark");
+  applyTheme(isDark ? "light" : "dark");
+});
+
 setTimeout(() => {
   highlight?.classList.add("pulse");
 }, 500);
 
+initTheme();
 ensureSession();
 
 const closeModal = () => {
@@ -841,7 +1231,9 @@ const renderAssignmentList = () => {
     meta.className = "assignment-meta";
     const turnInLabel =
       assignment.turnIn === "physical" ? "Physical" : "Online";
-    meta.textContent = `Due ${assignment.due} · Est ${assignment.hours}h · ${turnInLabel} turn-in · Scheduled ${Math.round(
+    const kindLabel = assignment.kind || "homework";
+    const difficultyLabel = assignment.difficulty || "medium";
+    meta.textContent = `${assignment.course ? `${assignment.course} · ` : ""}${kindLabel} · ${difficultyLabel} · Due ${assignment.due} · Est ${assignment.hours}h · ${turnInLabel} turn-in · Scheduled ${Math.round(
       totalMinutes
     )}m · Completed ${Math.round(completedMinutes)}m (${completionPct}%)`;
 
@@ -866,21 +1258,37 @@ const renderAssignmentList = () => {
 };
 
 const renderAiSettings = () => {
-  if (!aiSettingsForm) {
-    return;
+  if (aiSettingsForm) {
+    if (aiProvider) {
+      aiProvider.value = aiSettings.provider || "openai";
+    }
+    if (aiModel) {
+      aiModel.value = aiSettings.model || "gpt-4.1-mini";
+    }
+    if (aiApiKey) {
+      aiApiKey.value = aiSettings.apiKey || "";
+    }
+    if (aiKeyEnabled) {
+      aiKeyEnabled.checked = Boolean(aiSettings.enabled);
+    }
   }
 
-  if (aiProvider) {
-    aiProvider.value = aiSettings.provider || "openai";
+  if (aiProviderDisplay) {
+    aiProviderDisplay.textContent = (aiSettings.provider || "openai").toUpperCase();
   }
-  if (aiModel) {
-    aiModel.value = aiSettings.model || "gpt-4.1-mini";
+  if (aiModelDisplay) {
+    aiModelDisplay.textContent = aiSettings.model || "gpt-4.1-mini";
   }
-  if (aiApiKey) {
-    aiApiKey.value = aiSettings.apiKey || "";
+  if (aiModeDisplay) {
+    aiModeDisplay.textContent =
+      aiSettings.enabled && aiSettings.apiKey
+        ? "Developer AI mode enabled"
+        : "Local fallback active";
   }
-  if (aiKeyEnabled) {
-    aiKeyEnabled.checked = Boolean(aiSettings.enabled);
+  if (aiKeySourceDisplay) {
+    aiKeySourceDisplay.textContent = aiSettings.apiKey
+      ? `Developer key detected (${maskKey(aiSettings.apiKey)})`
+      : "No developer key detected";
   }
 
   if (aiSettingsStatus) {
@@ -892,7 +1300,269 @@ const renderAiSettings = () => {
   }
 };
 
+const stageNexusSuggestionForCadence = (runId) => {
+  const runIndex = nexusRuns.findIndex((run) => run.id === runId);
+  if (runIndex < 0) {
+    return;
+  }
+
+  const payload = buildCadencePayloadFromRun(nexusRuns[runIndex]);
+  if (!payload) {
+    return;
+  }
+
+  const existingIndex = cadenceQueue.findIndex(
+    (item) => item.nexusRunId === payload.nexusRunId
+  );
+
+  if (existingIndex >= 0) {
+    cadenceQueue[existingIndex] = {
+      ...cadenceQueue[existingIndex],
+      ...payload,
+      id: cadenceQueue[existingIndex].id,
+      updatedAt: Date.now(),
+    };
+    payload.id = cadenceQueue[existingIndex].id;
+  } else {
+    cadenceQueue.unshift(payload);
+  }
+
+  cadenceQueue = cadenceQueue.slice(0, 50);
+  saveCadenceQueue(cadenceQueue);
+
+  nexusRuns[runIndex] = {
+    ...nexusRuns[runIndex],
+    cadenceQueueId: payload.id,
+    cadenceQueuedAt: Date.now(),
+  };
+  saveNexusRuns(nexusRuns);
+  renderAll();
+
+  if (nexusStatus) {
+    nexusStatus.textContent = cadenceConfig.enabled && cadenceConfig.endpoint
+      ? "Cadence handoff package staged. Endpoint integration can send this payload later."
+      : "Cadence handoff package queued locally (JSON export ready).";
+  }
+};
+
+const clearCadenceQueue = () => {
+  cadenceQueue = [];
+  saveCadenceQueue(cadenceQueue);
+  nexusRuns = nexusRuns.map((run) => ({
+    ...run,
+    cadenceQueueId: "",
+    cadenceQueuedAt: 0,
+  }));
+  saveNexusRuns(nexusRuns);
+  renderAll();
+};
+
+const exportCadenceQueueAsJson = () => {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    schemaVersion: "vertex.cadence.export-batch.v1",
+    count: cadenceQueue.length,
+    items: cadenceQueue,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const stamp = new Date().toISOString().replaceAll(":", "-");
+  link.href = url;
+  link.download = `vertex-cadence-handoff-${stamp}.json`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+
+  cadenceQueue = cadenceQueue.map((item) => ({
+    ...item,
+    sync: {
+      ...(item.sync || {}),
+      status: "exported",
+      exportedAt: Date.now(),
+    },
+  }));
+  saveCadenceQueue(cadenceQueue);
+  renderAll();
+};
+
+const renderCadenceIntegration = () => {
+  if (cadenceModeDisplay) {
+    cadenceModeDisplay.textContent = cadenceConfig.enabled
+      ? "Cadence integration enabled"
+      : "Cadence handoff disabled (queue/export mode)";
+  }
+
+  if (cadenceEndpointDisplay) {
+    cadenceEndpointDisplay.textContent = cadenceConfig.endpoint || "No endpoint configured";
+  }
+
+  if (cadenceProjectDisplay) {
+    cadenceProjectDisplay.textContent = cadenceConfig.projectId || "No project id";
+  }
+
+  if (cadenceQueueCount) {
+    cadenceQueueCount.textContent = String(cadenceQueue.length);
+  }
+
+  if (cadenceLastExport) {
+    const latest = cadenceQueue
+      .map((item) => item?.sync?.exportedAt)
+      .filter(Boolean)
+      .sort((a, b) => b - a)[0];
+    cadenceLastExport.textContent = latest
+      ? new Date(latest).toLocaleString()
+      : "Not exported yet";
+  }
+
+  if (cadenceStatusSummary) {
+    cadenceStatusSummary.textContent = cadenceQueue.length
+      ? `${cadenceQueue.length} handoff package(s) queued for future Cadence sync`
+      : "No queued Cadence handoff packages yet";
+  }
+
+  if (cadenceExportButton) {
+    cadenceExportButton.disabled = cadenceQueue.length === 0;
+  }
+
+  if (cadenceClearButton) {
+    cadenceClearButton.disabled = cadenceQueue.length === 0;
+  }
+};
+
+const prefillNexusFromCourseFile = (record) => {
+  if (!record) {
+    return;
+  }
+
+  if (nexusSource) {
+    nexusSource.value = inferNexusSourceFromDocKind(record.kind);
+  }
+
+  if (nexusText) {
+    const summaryLines = [
+      `Course: ${record.course || "General"}`,
+      `Document type: ${record.kind || "other"}`,
+      `File: ${record.name}`,
+    ];
+    if (record.textSnippet) {
+      summaryLines.push("", record.textSnippet);
+    } else {
+      summaryLines.push(
+        "",
+        "No text preview available for this file type yet. Paste key sections here or add PDF/DOCX parsing next."
+      );
+    }
+    nexusText.value = summaryLines.join("\n");
+  }
+
+  if (nexusStatus) {
+    nexusStatus.textContent = `Loaded "${record.name}" into Nexus intake. Review and click Run Nexus Prep.`;
+  }
+
+  if (typeof nexusText?.focus === "function") {
+    nexusText.focus();
+  }
+};
+
+const deleteCourseFile = (id) => {
+  courseFiles = courseFiles.filter((file) => file.id !== id);
+  saveCourseFiles(courseFiles);
+  renderAll();
+};
+
+const renderCourseFiles = () => {
+  if (!courseFileList) {
+    return;
+  }
+
+  courseFileList.innerHTML = "";
+
+  if (!courseFiles.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No course files yet. Upload syllabi, assignment sheets, or rubrics.";
+    courseFileList.appendChild(empty);
+    return;
+  }
+
+  courseFiles.forEach((record) => {
+    const item = document.createElement("div");
+    item.className = "nexus-item";
+
+    const title = document.createElement("strong");
+    title.textContent = record.name;
+
+    const meta = document.createElement("div");
+    meta.className = "block-meta";
+    meta.textContent = `${record.course || "General"} · ${record.kind || "other"} · ${
+      record.type || "unknown"
+    } · ${formatBytes(record.size)} · ${new Date(record.uploadedAt).toLocaleString()}`;
+
+    const preview = document.createElement("p");
+    preview.className = "nexus-preview";
+    preview.textContent = record.textSnippet
+      ? record.textSnippet.slice(0, 220)
+      : "Metadata saved. Text preview is not available for this file type yet.";
+
+    const actions = document.createElement("div");
+    actions.className = "block-actions";
+
+    const useButton = document.createElement("button");
+    useButton.type = "button";
+    useButton.className = "primary";
+    useButton.textContent = "Use in Nexus";
+    useButton.addEventListener("click", () => prefillNexusFromCourseFile(record));
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.textContent = "Delete";
+    removeButton.addEventListener("click", () => deleteCourseFile(record.id));
+
+    actions.append(useButton, removeButton);
+    item.append(title, meta, preview, actions);
+    courseFileList.appendChild(item);
+  });
+};
+
 const renderNexusSignals = () => {
+  if (nexusReadinessValue && nexusReadinessLabel) {
+    const totalBlocks = focusBlocks.length;
+    const completedBlocks = focusBlocks.filter((block) => block.completed).length;
+    const completionRatio = totalBlocks ? completedBlocks / totalBlocks : 0;
+    const hardAssignments = assignments.filter(
+      (assignment) => assignment.difficulty === "hard"
+    );
+    const hardIncomplete = hardAssignments.filter((assignment) => {
+      const linked = focusBlocks.filter((block) => block.assignmentId === assignment.id);
+      if (!linked.length) {
+        return true;
+      }
+      return linked.some((block) => !block.completed);
+    }).length;
+    const recentQuizCount = quizRuns.length;
+
+    const readiness = Math.max(
+      25,
+      Math.min(
+        99,
+        Math.round(45 + completionRatio * 35 + recentQuizCount * 3 - hardIncomplete * 4)
+      )
+    );
+
+    nexusReadinessValue.textContent = `${readiness}%`;
+    nexusReadinessLabel.textContent =
+      readiness >= 85
+        ? "Assessment-ready trend"
+        : readiness >= 65
+        ? "Progressing, focus gaps remain"
+        : "Early-stage prep, prioritize gap closure";
+  }
+
   if (!nexusSignalList) {
     return;
   }
@@ -906,20 +1576,62 @@ const renderNexusSignals = () => {
     return;
   }
 
-  nexusRuns.slice(0, 6).forEach((run) => {
+  const gapCandidates = [];
+  assignments.forEach((assignment) => {
+    if (assignment.difficulty === "hard") {
+      gapCandidates.push({
+        title: assignment.title,
+        course: assignment.course || "General",
+        reason: "Hard difficulty",
+      });
+    }
+  });
+
+  nexusRuns.forEach((run) => {
+    if (run.assignment.difficulty === "hard") {
+      gapCandidates.push({
+        title: run.assignment.title,
+        course: run.assignment.course || "General",
+        reason: "Detected from intake",
+      });
+    }
+  });
+
+  const uniqueGaps = [];
+  const seen = new Set();
+  gapCandidates.forEach((gap) => {
+    const key = `${gap.course}:${gap.title}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueGaps.push(gap);
+    }
+  });
+
+  uniqueGaps.slice(0, 6).forEach((run) => {
     const item = document.createElement("div");
     item.className = "nexus-item";
     item.innerHTML = `
-      <strong>${escapeHtml(run.assignment.title)}</strong>
+      <strong>${escapeHtml(run.title)}</strong>
       <div class="block-meta">
-        <span>${escapeHtml(run.source)}</span>
-        <span>Due ${escapeHtml(run.assignment.due || "TBD")}</span>
-        <span>${escapeHtml(String(run.assignment.hours))}h estimate</span>
-        <span>${escapeHtml(run.assignment.turnIn)} turn-in</span>
+        <span>${escapeHtml(run.course || "General")}</span>
+        <span>Knowledge gap signal</span>
+        <span>${escapeHtml(run.reason)}</span>
       </div>
     `;
     nexusSignalList.appendChild(item);
   });
+
+  if (!uniqueGaps.length) {
+    const item = document.createElement("div");
+    item.className = "nexus-item";
+    item.innerHTML = `
+      <strong>No critical gaps detected</strong>
+      <div class="block-meta">
+        <span>Keep ingesting quizzes and notes for sharper diagnostics</span>
+      </div>
+    `;
+    nexusSignalList.appendChild(item);
+  }
 };
 
 const addFocusBlock = (input) => {
@@ -946,6 +1658,9 @@ const addAssignment = (input) => {
     title: input.title || "Untitled Assignment",
     due: input.due || new Date().toISOString().slice(0, 10),
     hours: String(input.hours || 1),
+    course: input.course || "",
+    kind: input.kind || "homework",
+    difficulty: input.difficulty || "medium",
     turnIn: input.turnIn || "online",
     createdAt: Date.now(),
   };
@@ -968,6 +1683,9 @@ const applyNexusSuggestion = (runId, includeBlocks) => {
       title: run.assignment.title,
       due: run.assignment.due,
       hours: run.assignment.hours,
+      course: run.assignment.course,
+      kind: run.assignment.kind,
+      difficulty: run.assignment.difficulty,
       turnIn: run.assignment.turnIn,
     });
   }
@@ -1031,7 +1749,7 @@ const renderNexusSuggestions = () => {
     const meta = document.createElement("div");
     meta.className = "block-meta";
     const turnInLabel = run.assignment.turnIn === "physical" ? "Physical" : "Online";
-    meta.textContent = `Due ${run.assignment.due} · ${run.assignment.hours}h · ${turnInLabel} turn-in · ${run.sessions.length} block suggestion(s)`;
+    meta.textContent = `${run.assignment.course ? `${run.assignment.course} · ` : ""}${run.assignment.kind || "homework"} · ${run.assignment.difficulty || "medium"} · Due ${run.assignment.due} · ${run.assignment.hours}h · ${turnInLabel} turn-in · ${run.sessions.length} block suggestion(s)`;
 
     const source = document.createElement("p");
     source.className = "nexus-preview";
@@ -1055,7 +1773,16 @@ const renderNexusSuggestions = () => {
       applyNexusSuggestion(run.id, true)
     );
 
-    actions.append(addAssignmentButton, addAllButton);
+    const cadenceButton = document.createElement("button");
+    cadenceButton.type = "button";
+    cadenceButton.textContent = run.cadenceQueueId
+      ? "Update Cadence Handoff"
+      : "Stage for Cadence";
+    cadenceButton.addEventListener("click", () =>
+      stageNexusSuggestionForCadence(run.id)
+    );
+
+    actions.append(addAssignmentButton, addAllButton, cadenceButton);
 
     if (run.appliedAssignmentId) {
       const badge = document.createElement("div");
@@ -1064,8 +1791,62 @@ const renderNexusSuggestions = () => {
       item.append(badge);
     }
 
+    if (run.cadenceQueueId) {
+      const cadenceBadge = document.createElement("div");
+      cadenceBadge.className = "nexus-badge";
+      cadenceBadge.textContent = "Cadence handoff queued";
+      item.append(cadenceBadge);
+    }
+
     item.append(heading, meta, source, actions);
     nexusSuggestionList.appendChild(item);
+  });
+};
+
+const renderQuizOutput = () => {
+  if (!quizList) {
+    return;
+  }
+
+  quizList.innerHTML = "";
+  if (!quizRuns.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "Generate a quiz from a topic to start practicing.";
+    quizList.appendChild(empty);
+    return;
+  }
+
+  quizRuns.slice(0, 1).forEach((run) => {
+    const header = document.createElement("div");
+    header.className = "nexus-item";
+
+    const title = document.createElement("strong");
+    title.textContent = `Quiz: ${run.topic}`;
+
+    const meta = document.createElement("div");
+    meta.className = "block-meta";
+    meta.textContent = `${run.style} · ${run.questions.length} question(s) · ${new Date(
+      run.createdAt
+    ).toLocaleString()}`;
+
+    header.append(title, meta);
+    quizList.appendChild(header);
+
+    run.questions.forEach((question, index) => {
+      const item = document.createElement("div");
+      item.className = "nexus-item";
+
+      const q = document.createElement("strong");
+      q.textContent = `${index + 1}. [${question.type}] ${question.question}`;
+
+      const a = document.createElement("p");
+      a.className = "nexus-preview";
+      a.textContent = `Answer guide: ${question.answer}`;
+
+      item.append(q, a);
+      quizList.appendChild(item);
+    });
   });
 };
 
@@ -1076,8 +1857,11 @@ const renderAll = () => {
   renderAssignmentList();
   renderAssignmentOptions();
   renderAiSettings();
+  renderCadenceIntegration();
+  renderCourseFiles();
   renderNexusSignals();
   renderNexusSuggestions();
+  renderQuizOutput();
   renderCalendar(currentView);
 };
 
@@ -1167,6 +1951,9 @@ assignmentForm?.addEventListener("submit", (event) => {
   const title = assignmentForm.title.value.trim();
   const due = assignmentForm.due.value;
   const hours = assignmentForm.hours.value;
+  const course = assignmentCourse ? assignmentCourse.value.trim() : "";
+  const kind = assignmentKind ? assignmentKind.value : "homework";
+  const difficulty = assignmentDifficulty ? assignmentDifficulty.value : "medium";
   const turnIn = assignmentTurnIn ? assignmentTurnIn.value : "online";
 
   const assignment = {
@@ -1174,6 +1961,9 @@ assignmentForm?.addEventListener("submit", (event) => {
     title,
     due,
     hours,
+    course,
+    kind,
+    difficulty,
     turnIn,
     createdAt: Date.now(),
   };
@@ -1215,6 +2005,92 @@ nexusClearButton?.addEventListener("click", () => {
   }
 });
 
+courseFileClearButton?.addEventListener("click", () => {
+  courseFiles = [];
+  saveCourseFiles(courseFiles);
+  renderAll();
+  if (courseFileStatus) {
+    courseFileStatus.textContent = "Course materials library cleared.";
+  }
+  if (courseFileInput) {
+    courseFileInput.value = "";
+  }
+});
+
+courseFileForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const files = Array.from(courseFileInput?.files || []);
+  if (!files.length) {
+    if (courseFileStatus) {
+      courseFileStatus.textContent = "Choose at least one file to add.";
+    }
+    return;
+  }
+
+  const course = courseFileCourse?.value.trim() || "";
+  const kind = courseFileKind?.value || "syllabus";
+  const submitButton = courseFileForm.querySelector('button[type="submit"]');
+  let previewCount = 0;
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "Adding...";
+  }
+
+  try {
+    for (const file of files) {
+      const snippetResult = await readFileSnippet(file);
+      if (snippetResult.canPreview && snippetResult.text) {
+        previewCount += 1;
+      }
+
+      courseFiles.unshift({
+        id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+        name: file.name,
+        size: file.size || 0,
+        type: file.type || "unknown",
+        course,
+        kind,
+        uploadedAt: Date.now(),
+        textSnippet: snippetResult.text || "",
+      });
+    }
+
+    courseFiles = courseFiles.slice(0, 100);
+    saveCourseFiles(courseFiles);
+    renderAll();
+
+    if (courseFileStatus) {
+      courseFileStatus.textContent = `Added ${files.length} file${
+        files.length === 1 ? "" : "s"
+      }. ${previewCount} text preview${previewCount === 1 ? "" : "s"} available.`;
+    }
+
+    if (courseFileInput) {
+      courseFileInput.value = "";
+    }
+  } catch (error) {
+    if (courseFileStatus) {
+      courseFileStatus.textContent =
+        "Could not save all files. Try fewer/lower-size files (browser storage limit).";
+    }
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Add Files";
+    }
+  }
+});
+
+cadenceExportButton?.addEventListener("click", () => {
+  exportCadenceQueueAsJson();
+});
+
+cadenceClearButton?.addEventListener("click", () => {
+  clearCadenceQueue();
+});
+
 nexusForm?.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -1237,7 +2113,7 @@ nexusForm?.addEventListener("submit", (event) => {
     nexusStatus.textContent =
       aiSettings.enabled && aiSettings.apiKey
         ? "Nexus Prep ran in AI-ready mode (local fallback parser currently active)."
-        : "Nexus Prep ran in local parser mode. Add an API key later to enable live AI.";
+        : "Nexus Prep ran in local parser mode. Enable developer AI integration later for live synthesis.";
   }
 });
 
@@ -1269,6 +2145,49 @@ aiSettingsForm?.addEventListener("submit", (event) => {
     aiSettingsStatus.textContent = aiSettings.apiKey
       ? `Settings saved · ${maskKey(aiSettings.apiKey)}`
       : "Settings saved · no API key configured";
+  }
+});
+
+quizClearButton?.addEventListener("click", () => {
+  quizForm?.reset();
+  if (quizStatus) {
+    quizStatus.textContent = "Quiz input cleared.";
+  }
+});
+
+quizForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const topic = quizTopic?.value.trim() || "";
+  const count = Math.max(1, Math.min(10, Number(quizCount?.value || 5)));
+  const style = quizStyle?.value || "mixed";
+
+  if (!topic) {
+    if (quizStatus) {
+      quizStatus.textContent = "Enter a topic first.";
+    }
+    return;
+  }
+
+  const run = {
+    id: crypto.randomUUID?.() || String(Date.now()),
+    topic,
+    count,
+    style,
+    createdAt: Date.now(),
+    questions: generateQuizQuestions(topic, count, style),
+  };
+
+  quizRuns.unshift(run);
+  quizRuns = quizRuns.slice(0, 10);
+  saveQuizRuns(quizRuns);
+  renderAll();
+
+  if (quizStatus) {
+    quizStatus.textContent =
+      aiSettings.enabled && aiSettings.apiKey
+        ? "Quiz generated in local mode. AI quiz generation can be wired to your developer key next."
+        : "Quiz generated in local mode.";
   }
 });
 

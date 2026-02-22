@@ -23,11 +23,13 @@
         <a href="app.html">Command Center</a>
         <a class="active" href="nexus.html">Nexus Prep</a>
         <a href="insights.html">Insights</a>
+        <a href="settings.html">Settings</a>
       </nav>
       <div class="profile">
         <p id="profile-name">Signed out</p>
         <span id="last-sync">Last sync: none</span>
       </div>
+      <button class="ghost theme-toggle" id="theme-toggle" type="button">Dark Mode</button>
       <button class="ghost logout" id="logout">Log out</button>
     </aside>
 
@@ -63,43 +65,81 @@
               <button class="ghost" type="button" id="nexus-clear">Clear</button>
               <button type="submit">Run Nexus Prep</button>
             </div>
-            <p class="modal-status" id="nexus-status">Local Nexus parser is active. Add an API key below later to enable live AI synthesis.</p>
+            <p class="modal-status" id="nexus-status">Local Nexus parser is active. Developer-managed AI integration can be enabled later.</p>
           </form>
         </article>
 
         <article class="card">
-          <h3>Nexus AI Settings</h3>
-          <p>Save provider + API key locally for future Nexus Prep features like difficulty analysis, quiz generation, and study synthesis.</p>
-          <form class="nexus-form" id="ai-settings-form" autocomplete="off">
-            <label for="ai-provider">Provider</label>
-            <select id="ai-provider" name="provider">
-              <option value="openai">OpenAI</option>
-              <option value="anthropic">Anthropic</option>
-              <option value="custom">Custom</option>
-            </select>
+          <h3>Course File Intake</h3>
+          <p>Add course files (especially syllabi, assignment sheets, and rubrics) so Nexus Prep can organize and use them in your study workflow.</p>
+          <form class="nexus-form" id="course-file-form">
+            <div class="modal-row">
+              <div>
+                <label for="course-file-course">Course</label>
+                <input id="course-file-course" name="course" type="text" placeholder="AP Biology" />
+              </div>
+              <div>
+                <label for="course-file-kind">Document type</label>
+                <select id="course-file-kind" name="kind">
+                  <option value="syllabus">Syllabus</option>
+                  <option value="assignment">Assignment Sheet</option>
+                  <option value="rubric">Rubric</option>
+                  <option value="notes">Notes</option>
+                  <option value="reading">Reading</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
 
-            <label for="ai-model">Model</label>
-            <input id="ai-model" name="model" type="text" placeholder="gpt-4.1-mini" />
-
-            <label for="ai-api-key">API Key (saved in this browser)</label>
-            <input id="ai-api-key" name="apiKey" type="password" placeholder="Paste later" />
-
-            <label class="checkbox-row" for="ai-key-enabled">
-              <input id="ai-key-enabled" name="enabled" type="checkbox" />
-              Enable API mode when key is present
-            </label>
+            <label for="course-file-input">Files</label>
+            <input
+              id="course-file-input"
+              name="files"
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.txt,.md,.csv,.json,.rtf,image/*"
+            />
 
             <div class="modal-actions">
-              <button class="ghost" type="button" id="ai-settings-clear">Clear</button>
-              <button type="submit">Save Settings</button>
+              <button class="ghost" type="button" id="course-file-clear">Clear Library</button>
+              <button type="submit">Add Files</button>
             </div>
-            <p class="modal-status" id="ai-settings-status">No API key configured yet.</p>
+            <p class="modal-status" id="course-file-status">
+              Upload course materials here. Text files can be previewed immediately; PDF/DOCX parsing can be wired next.
+            </p>
           </form>
         </article>
 
+        <article class="card wide">
+          <h3>Course Materials Library</h3>
+          <p>Your uploaded study files and course documents. Use a file to prefill Nexus intake for analysis.</p>
+          <div class="nexus-list" id="course-file-list"></div>
+        </article>
+
         <article class="card">
-          <h3>Difficulty Signals</h3>
-          <p>Parsed study signals from recent Nexus Prep runs.</p>
+          <h3>Developer AI Integration</h3>
+          <p>The API key is managed by you (developer/admin), not students. This panel shows integration status only.</p>
+          <div class="nexus-list">
+            <div class="nexus-item">
+              <strong id="ai-provider-display">OpenAI</strong>
+              <div class="block-meta">
+                <span id="ai-model-display">gpt-4.1-mini</span>
+                <span id="ai-mode-display">Local fallback active</span>
+                <span id="ai-key-source-display">No developer key detected</span>
+              </div>
+              <p class="nexus-preview">Set a developer key later via a secure backend or dev configuration. Do not expose production keys to students.</p>
+              <p class="modal-status" id="ai-settings-status">Developer-managed integration status.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Nexus Diagnostics</h3>
+          <p>Readiness score and top knowledge gaps derived from recent intake and study activity.</p>
+          <div class="score" id="nexus-readiness-score">
+            <strong>--</strong>
+            <span>No data yet</span>
+          </div>
           <div class="nexus-list" id="nexus-signal-list"></div>
         </article>
 
@@ -115,10 +155,44 @@
           </div>
         </article>
 
+        <article class="card">
+          <h3>Quiz Lab</h3>
+          <p>Generate quick practice questions from a topic for recall training.</p>
+          <form class="nexus-form" id="quiz-form">
+            <label for="quiz-topic">Topic</label>
+            <input id="quiz-topic" name="topic" type="text" placeholder="Cellular respiration" />
+            <div class="modal-row">
+              <div>
+                <label for="quiz-count">Questions</label>
+                <input id="quiz-count" name="count" type="number" min="1" max="10" value="5" />
+              </div>
+              <div>
+                <label for="quiz-style">Style</label>
+                <select id="quiz-style" name="style">
+                  <option value="mixed">Mixed</option>
+                  <option value="multiple-choice">Multiple Choice</option>
+                  <option value="short-answer">Short Answer</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="ghost" id="quiz-clear" type="button">Clear</button>
+              <button type="submit">Generate Quiz</button>
+            </div>
+            <p class="modal-status" id="quiz-status">Local quiz generation is active. AI quiz generation can be enabled later.</p>
+          </form>
+        </article>
+
         <article class="card wide">
           <h3>Nexus Suggestions</h3>
-          <p>Convert Nexus Prep outputs into assignments and linked focus blocks. Quiz workflows can be added later using your API key.</p>
+          <p>Convert Nexus Prep outputs into assignments and linked focus blocks.</p>
           <div class="nexus-list" id="nexus-suggestion-list"></div>
+        </article>
+
+        <article class="card wide">
+          <h3>Quiz Output</h3>
+          <p>Practice questions generated for the current topic.</p>
+          <div class="nexus-list" id="quiz-list"></div>
         </article>
       </section>
     </main>
@@ -215,6 +289,31 @@
             </div>
           </div>
 
+          <div class="modal-row">
+            <div>
+              <label for="assignment-course">Course</label>
+              <input id="assignment-course" name="course" type="text" placeholder="AP Biology" />
+            </div>
+            <div>
+              <label for="assignment-kind">Type</label>
+              <select id="assignment-kind" name="kind">
+                <option value="homework">Homework</option>
+                <option value="quiz">Quiz</option>
+                <option value="exam">Exam</option>
+                <option value="essay">Essay</option>
+                <option value="lab">Lab</option>
+                <option value="project">Project</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="assignment-difficulty">Difficulty</label>
+          <select id="assignment-difficulty" name="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+
           <label for="assignment-turnin">Turn-in type</label>
           <select id="assignment-turnin" name="turnin">
             <option value="online">Online</option>
@@ -230,6 +329,20 @@
       </div>
     </div>
 
+    <script>
+      window.VERTEX_NEXUS_AI_CONFIG = window.VERTEX_NEXUS_AI_CONFIG || {
+        provider: "openai",
+        model: "gpt-4.1-mini",
+        // apiKey: "paste-key-here",
+        // enabled: true,
+      };
+      window.VERTEX_CADENCE_CONFIG = window.VERTEX_CADENCE_CONFIG || {
+        enabled: false,
+        mode: "queue-export",
+        // endpoint: "https://your-backend.example.com/api/cadence/handoff",
+        // projectId: "vertex-student-1",
+      };
+    </script>
     <script src="app.js"></script>
   </body>
 </html>

@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex | Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body class="requires-auth">
+    <div class="bg-orbit"></div>
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-mark">Vx</span>
+        <span>Vertex</span>
+      </div>
+      <nav>
+        <a href="app.html">Command Center</a>
+        <a href="nexus.html">Nexus Prep</a>
+        <a href="insights.html">Insights</a>
+        <a class="active" href="settings.html">Settings</a>
+      </nav>
+      <div class="profile">
+        <p id="profile-name">Signed out</p>
+        <span id="last-sync">Last sync: none</span>
+      </div>
+      <button class="ghost theme-toggle" id="theme-toggle" type="button">Dark Mode</button>
+      <button class="ghost logout" id="logout">Log out</button>
+    </aside>
+
+    <main class="dashboard">
+      <header class="dash-header">
+        <div>
+          <p class="eyebrow">Workspace</p>
+          <h1>Settings</h1>
+        </div>
+        <div class="header-actions">
+          <a class="ghost" href="nexus.html">Open Nexus Prep</a>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card highlight">
+          <h2>Account & Session</h2>
+          <p>This is a single-user demo workspace. Your login state and product data are stored in this browser.</p>
+          <div class="nexus-list">
+            <div class="nexus-item">
+              <strong>Authentication mode</strong>
+              <div class="block-meta">
+                <span>Demo login</span>
+                <span>Single user</span>
+              </div>
+              <p class="nexus-preview">Use the sidebar Log out button to end the current session.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Appearance</h3>
+          <p>Use the sidebar theme button to switch between light and dark mode. Your preference is saved on this device.</p>
+          <div class="graph">
+            <span>Theme preference persists</span>
+            <span>White + blue/black design system</span>
+            <span>Nexus-first workspace</span>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Nexus AI Integration</h3>
+          <p>Students do not enter API keys. Integration is controlled by the developer/admin configuration.</p>
+          <div class="nexus-list">
+            <div class="nexus-item">
+              <strong id="ai-provider-display">OpenAI</strong>
+              <div class="block-meta">
+                <span id="ai-model-display">gpt-4.1-mini</span>
+                <span id="ai-mode-display">Local fallback active</span>
+                <span id="ai-key-source-display">No developer key detected</span>
+              </div>
+              <p class="nexus-preview">For production, move the API key to a backend endpoint and call it from Nexus Prep.</p>
+              <p class="modal-status" id="ai-settings-status">Developer-managed integration status.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Cadence Integration (Future)</h3>
+          <p>Nexus Prep can stage handoff packages now so you can connect Cadence later without changing student workflows.</p>
+          <div class="nexus-list">
+            <div class="nexus-item">
+              <strong id="cadence-mode-display">Cadence handoff disabled (queue/export mode)</strong>
+              <div class="block-meta">
+                <span id="cadence-endpoint-display">No endpoint configured</span>
+                <span id="cadence-project-display">No project id</span>
+                <span>Queued packages: <strong id="cadence-queue-count">0</strong></span>
+              </div>
+              <p class="nexus-preview" id="cadence-status-summary">No queued Cadence handoff packages yet</p>
+              <p class="modal-status">Last JSON export: <span id="cadence-last-export">Not exported yet</span></p>
+              <div class="block-actions">
+                <button id="cadence-export-json" type="button" class="primary">Export Queue JSON</button>
+                <button id="cadence-clear-queue" type="button">Clear Queue</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Student Workflow Defaults</h3>
+          <p>Nexus Prep is optimized for assignment intake, difficulty analysis, focus block planning, and quiz generation.</p>
+          <ul>
+            <li>Assignments can include course, due date, difficulty, turn-in mode, and completion status.</li>
+            <li>Focus blocks sync across Command Center and Planner views.</li>
+            <li>Quiz Lab generates local practice questions until backend AI is connected.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      window.VERTEX_CADENCE_CONFIG = window.VERTEX_CADENCE_CONFIG || {
+        enabled: false,
+        mode: "queue-export",
+        // endpoint: "https://your-backend.example.com/api/cadence/handoff",
+        // projectId: "vertex-student-1",
+      };
+    </script>
+    <script src="app.js"></script>
+  </body>
+</html>

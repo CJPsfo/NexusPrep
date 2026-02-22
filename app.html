@@ -23,11 +23,13 @@
         <a class="active" href="app.html">Command Center</a>
         <a href="nexus.html">Nexus Prep</a>
         <a href="insights.html">Insights</a>
+        <a href="settings.html">Settings</a>
       </nav>
       <div class="profile">
         <p id="profile-name">Signed out</p>
         <span id="last-sync">Last sync: none</span>
       </div>
+      <button class="ghost theme-toggle" id="theme-toggle" type="button">Dark Mode</button>
       <button class="ghost logout" id="logout">Log out</button>
     </aside>
 
@@ -189,6 +191,31 @@
               <input id="assignment-hours" name="hours" type="number" min="1" max="40" step="1" value="4" required />
             </div>
           </div>
+
+          <div class="modal-row">
+            <div>
+              <label for="assignment-course">Course</label>
+              <input id="assignment-course" name="course" type="text" placeholder="AP Biology" />
+            </div>
+            <div>
+              <label for="assignment-kind">Type</label>
+              <select id="assignment-kind" name="kind">
+                <option value="homework">Homework</option>
+                <option value="quiz">Quiz</option>
+                <option value="exam">Exam</option>
+                <option value="essay">Essay</option>
+                <option value="lab">Lab</option>
+                <option value="project">Project</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="assignment-difficulty">Difficulty</label>
+          <select id="assignment-difficulty" name="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
 
           <label for="assignment-turnin">Turn-in type</label>
           <select id="assignment-turnin" name="turnin">
