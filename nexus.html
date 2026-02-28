@@ -22,6 +22,7 @@
       <nav>
         <a href="app.html">Command Center</a>
         <a class="active" href="nexus.html">Nexus Prep</a>
+        <a href="classes.html">Classes</a>
         <a href="insights.html">Insights</a>
         <a href="settings.html">Settings</a>
       </nav>
@@ -99,6 +100,11 @@
               multiple
               accept=".pdf,.doc,.docx,.txt,.md,.csv,.json,.rtf,image/*"
             />
+
+            <label for="course-file-assignment">Link to assignment (optional)</label>
+            <select id="course-file-assignment" name="assignment">
+              <option value="">No assignment link</option>
+            </select>
 
             <div class="modal-actions">
               <button class="ghost" type="button" id="course-file-clear">Clear Library</button>

@@ -45,10 +45,16 @@ const nexusReadinessLabel = document.querySelector("#nexus-readiness-score span"
 const courseFileForm = document.querySelector("#course-file-form");
 const courseFileCourse = document.querySelector("#course-file-course");
 const courseFileKind = document.querySelector("#course-file-kind");
+const courseFileAssignment = document.querySelector("#course-file-assignment");
 const courseFileInput = document.querySelector("#course-file-input");
 const courseFileClearButton = document.querySelector("#course-file-clear");
 const courseFileStatus = document.querySelector("#course-file-status");
 const courseFileList = document.querySelector("#course-file-list");
+const classProgressList = document.querySelector("#class-progress-list");
+const classCountValue = document.querySelector("#class-count");
+const classAssignmentCountValue = document.querySelector("#class-assignment-count");
+const classFileCountValue = document.querySelector("#class-file-count");
+const classCompletionValue = document.querySelector("#class-completion-rate");
 const cadenceStatusSummary = document.querySelector("#cadence-status-summary");
 const cadenceModeDisplay = document.querySelector("#cadence-mode-display");
 const cadenceEndpointDisplay = document.querySelector("#cadence-endpoint-display");
@@ -326,13 +332,17 @@ const buildCadencePayloadFromRun = (run) => {
 
   const relatedCourseFiles = courseFiles
     .filter((file) => {
+      const exactAssignmentLink =
+        file.assignmentId &&
+        assignment.id &&
+        normalizeText(file.assignmentId) === normalizeText(assignment.id);
       const sameCourse =
         normalizeText(file.course) &&
         normalizeText(file.course) === normalizeText(assignment.course);
       const likelyRelevant =
         !normalizeText(assignment.course) &&
         ["syllabus", "assignment", "rubric", "reading", "notes"].includes(file.kind);
-      return sameCourse || likelyRelevant;
+      return exactAssignmentLink || sameCourse || likelyRelevant;
     })
     .slice(0, 12)
     .map((file) => ({
@@ -1176,20 +1186,60 @@ const renderBlockList = () => {
 
 const renderAssignmentOptions = () => {
   if (!focusAssignment) {
-    return;
-  }
-  focusAssignment.innerHTML = "";
-  const emptyOption = document.createElement("option");
-  emptyOption.value = "";
-  emptyOption.textContent = "No assignment";
-  focusAssignment.appendChild(emptyOption);
+    // still populate other assignment selectors on pages without a focus modal
+  } else {
+    focusAssignment.innerHTML = "";
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = "No assignment";
+    focusAssignment.appendChild(emptyOption);
 
-  assignments.forEach((assignment) => {
-    const option = document.createElement("option");
-    option.value = assignment.id;
-    option.textContent = assignment.title;
-    focusAssignment.appendChild(option);
-  });
+    assignments.forEach((assignment) => {
+      const option = document.createElement("option");
+      option.value = assignment.id;
+      option.textContent = assignment.title;
+      focusAssignment.appendChild(option);
+    });
+  }
+
+  if (courseFileAssignment) {
+    const currentValue = courseFileAssignment.value || "";
+    courseFileAssignment.innerHTML = "";
+
+    const noLinkOption = document.createElement("option");
+    noLinkOption.value = "";
+    noLinkOption.textContent = "No assignment link";
+    courseFileAssignment.appendChild(noLinkOption);
+
+    assignments.forEach((assignment) => {
+      const option = document.createElement("option");
+      option.value = assignment.id;
+      option.textContent = `${
+        assignment.course ? `${assignment.course} · ` : ""
+      }${assignment.title}`;
+      courseFileAssignment.appendChild(option);
+    });
+
+    if (currentValue && assignments.some((assignment) => assignment.id === currentValue)) {
+      courseFileAssignment.value = currentValue;
+    }
+  }
+};
+
+const getAssignmentProgressMetrics = (assignmentId) => {
+  const linkedBlocks = focusBlocks.filter((block) => block.assignmentId === assignmentId);
+  const totalMinutes = linkedBlocks.reduce(
+    (sum, block) => sum + Number(block.duration || 0),
+    0
+  );
+  const completedMinutes = linkedBlocks
+    .filter((block) => block.completed)
+    .reduce((sum, block) => sum + Number(block.duration || 0), 0);
+
+  return {
+    totalMinutes,
+    completedMinutes,
+  };
 };
 
 const renderAssignmentList = () => {
@@ -1206,12 +1256,9 @@ const renderAssignmentList = () => {
   }
 
   assignments.forEach((assignment) => {
-    const totalMinutes = focusBlocks
-      .filter((block) => block.assignmentId === assignment.id)
-      .reduce((sum, block) => sum + Number(block.duration || 0), 0);
-    const completedMinutes = focusBlocks
-      .filter((block) => block.assignmentId === assignment.id && block.completed)
-      .reduce((sum, block) => sum + Number(block.duration || 0), 0);
+    const { totalMinutes, completedMinutes } = getAssignmentProgressMetrics(
+      assignment.id
+    );
     const estimatedMinutes = Number(assignment.hours || 0) * 60;
     const completionPct =
       estimatedMinutes > 0
@@ -1501,13 +1548,71 @@ const renderCourseFiles = () => {
     meta.className = "block-meta";
     meta.textContent = `${record.course || "General"} · ${record.kind || "other"} · ${
       record.type || "unknown"
-    } · ${formatBytes(record.size)} · ${new Date(record.uploadedAt).toLocaleString()}`;
+    } · ${formatBytes(record.size)} · ${new Date(record.uploadedAt).toLocaleString()}${
+      record.assignmentTitle ? ` · Linked: ${record.assignmentTitle}` : ""
+    }`;
 
     const preview = document.createElement("p");
     preview.className = "nexus-preview";
     preview.textContent = record.textSnippet
       ? record.textSnippet.slice(0, 220)
       : "Metadata saved. Text preview is not available for this file type yet.";
+
+    const linkRow = document.createElement("div");
+    linkRow.className = "assignment-row";
+
+    const linkSelect = document.createElement("select");
+    linkSelect.className = "inline-select";
+    const emptyOption = document.createElement("option");
+    emptyOption.value = "";
+    emptyOption.textContent = "No linked assignment";
+    linkSelect.appendChild(emptyOption);
+
+    assignments.forEach((assignment) => {
+      const option = document.createElement("option");
+      option.value = assignment.id;
+      option.textContent = `${assignment.course ? `${assignment.course} · ` : ""}${
+        assignment.title
+      }`;
+      linkSelect.appendChild(option);
+    });
+
+    linkSelect.value =
+      record.assignmentId &&
+      assignments.some((assignment) => assignment.id === record.assignmentId)
+        ? record.assignmentId
+        : "";
+
+    const linkButton = document.createElement("button");
+    linkButton.type = "button";
+    linkButton.textContent = "Save Link";
+    linkButton.addEventListener("click", () => {
+      const nextAssignmentId = linkSelect.value || "";
+      const nextAssignment = assignments.find(
+        (assignment) => assignment.id === nextAssignmentId
+      );
+
+      courseFiles = courseFiles.map((file) =>
+        file.id === record.id
+          ? {
+              ...file,
+              assignmentId: nextAssignmentId,
+              assignmentTitle: nextAssignment ? nextAssignment.title : "",
+              course: file.course || nextAssignment?.course || "",
+            }
+          : file
+      );
+      saveCourseFiles(courseFiles);
+      renderAll();
+
+      if (courseFileStatus) {
+        courseFileStatus.textContent = nextAssignment
+          ? `Linked "${record.name}" to "${nextAssignment.title}".`
+          : `Removed assignment link from "${record.name}".`;
+      }
+    });
+
+    linkRow.append(linkSelect, linkButton);
 
     const actions = document.createElement("div");
     actions.className = "block-actions";
@@ -1524,8 +1629,191 @@ const renderCourseFiles = () => {
     removeButton.addEventListener("click", () => deleteCourseFile(record.id));
 
     actions.append(useButton, removeButton);
-    item.append(title, meta, preview, actions);
+    item.append(title, meta, preview, linkRow, actions);
     courseFileList.appendChild(item);
+  });
+};
+
+const renderClassProgress = () => {
+  if (!classProgressList) {
+    return;
+  }
+
+  const classMap = new Map();
+  const getClassKey = (name) => normalizeText(name) || "__uncategorized";
+  const getClassLabel = (name) => String(name || "").trim() || "Uncategorized";
+
+  const ensureClass = (name) => {
+    const key = getClassKey(name);
+    if (!classMap.has(key)) {
+      classMap.set(key, {
+        key,
+        name: getClassLabel(name),
+        assignments: [],
+        files: [],
+      });
+    }
+    return classMap.get(key);
+  };
+
+  courseFiles.forEach((file) => {
+    ensureClass(file.course).files.push(file);
+  });
+
+  assignments.forEach((assignment) => {
+    ensureClass(assignment.course).assignments.push(assignment);
+  });
+
+  const classes = [...classMap.values()].map((group) => {
+    let estimatedMinutes = 0;
+    let scheduledMinutes = 0;
+    let completedMinutes = 0;
+    let completedAssignments = 0;
+    let dueSoon = 0;
+
+    group.assignments.forEach((assignment) => {
+      const { totalMinutes, completedMinutes: assignmentCompletedMinutes } =
+        getAssignmentProgressMetrics(assignment.id);
+      const estimated = Number(assignment.hours || 0) * 60;
+      estimatedMinutes += estimated;
+      scheduledMinutes += totalMinutes;
+      completedMinutes += assignmentCompletedMinutes;
+
+      if (estimated > 0 && assignmentCompletedMinutes >= estimated) {
+        completedAssignments += 1;
+      }
+
+      if (assignment.due) {
+        const dueDate = new Date(assignment.due);
+        if (!Number.isNaN(dueDate.getTime())) {
+          const daysUntilDue = Math.ceil(
+            (dueDate - new Date()) / (1000 * 60 * 60 * 24)
+          );
+          if (daysUntilDue >= 0 && daysUntilDue <= 7) {
+            dueSoon += 1;
+          }
+        }
+      }
+    });
+
+    const progressPct =
+      estimatedMinutes > 0
+        ? Math.min(100, Math.round((completedMinutes / estimatedMinutes) * 100))
+        : 0;
+
+    return {
+      ...group,
+      estimatedMinutes,
+      scheduledMinutes,
+      completedMinutes,
+      completedAssignments,
+      dueSoon,
+      progressPct,
+      linkedFiles: group.files.filter((file) => file.assignmentId).length,
+    };
+  });
+
+  classes.sort((a, b) => {
+    if (b.dueSoon !== a.dueSoon) {
+      return b.dueSoon - a.dueSoon;
+    }
+    if (a.progressPct !== b.progressPct) {
+      return a.progressPct - b.progressPct;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  const totalAssignments = classes.reduce(
+    (sum, group) => sum + group.assignments.length,
+    0
+  );
+  const totalFiles = classes.reduce((sum, group) => sum + group.files.length, 0);
+  const totalEstimatedMinutes = classes.reduce(
+    (sum, group) => sum + group.estimatedMinutes,
+    0
+  );
+  const totalCompletedMinutes = classes.reduce(
+    (sum, group) => sum + group.completedMinutes,
+    0
+  );
+  const overallCompletion =
+    totalEstimatedMinutes > 0
+      ? Math.min(100, Math.round((totalCompletedMinutes / totalEstimatedMinutes) * 100))
+      : 0;
+
+  if (classCountValue) {
+    classCountValue.textContent = String(classes.length);
+  }
+  if (classAssignmentCountValue) {
+    classAssignmentCountValue.textContent = String(totalAssignments);
+  }
+  if (classFileCountValue) {
+    classFileCountValue.textContent = String(totalFiles);
+  }
+  if (classCompletionValue) {
+    classCompletionValue.textContent = `${overallCompletion}%`;
+  }
+
+  classProgressList.innerHTML = "";
+
+  if (!classes.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent =
+      "No classes tracked yet. Upload a syllabus or add an assignment with a course name in Nexus Prep.";
+    classProgressList.appendChild(empty);
+    return;
+  }
+
+  classes.forEach((group) => {
+    const card = document.createElement("div");
+    card.className = "class-card";
+
+    const title = document.createElement("h4");
+    title.textContent = group.name;
+
+    const meta = document.createElement("div");
+    meta.className = "class-meta";
+    meta.textContent = `${group.assignments.length} assignment(s) · ${group.files.length} file(s)${
+      group.dueSoon ? ` · ${group.dueSoon} due soon` : ""
+    }`;
+
+    const progress = document.createElement("div");
+    progress.className = "class-progress";
+
+    const progressRow = document.createElement("div");
+    progressRow.className = "class-progress-row";
+    progressRow.innerHTML = `
+      <span>${Math.round(group.completedMinutes)}m complete / ${Math.round(
+        group.estimatedMinutes
+      )}m estimated</span>
+      <strong>${group.progressPct}%</strong>
+    `;
+
+    const progressTrack = document.createElement("div");
+    progressTrack.className = "class-progress-track";
+    const progressFill = document.createElement("div");
+    progressFill.className = "class-progress-fill";
+    progressFill.style.width = `${group.progressPct}%`;
+    progressTrack.appendChild(progressFill);
+
+    progress.append(progressRow, progressTrack);
+
+    const chips = document.createElement("div");
+    chips.className = "class-chip-row";
+    const scheduledChip = document.createElement("span");
+    scheduledChip.className = "class-chip";
+    scheduledChip.textContent = `${Math.round(group.scheduledMinutes)}m scheduled`;
+    const completedChip = document.createElement("span");
+    completedChip.className = "class-chip";
+    completedChip.textContent = `${group.completedAssignments}/${group.assignments.length} assignments at target`;
+    const filesChip = document.createElement("span");
+    filesChip.className = "class-chip";
+    filesChip.textContent = `${group.linkedFiles}/${group.files.length} files linked`;
+    chips.append(scheduledChip, completedChip, filesChip);
+
+    card.append(title, meta, progress, chips);
+    classProgressList.appendChild(card);
   });
 };
 
@@ -1859,6 +2147,7 @@ const renderAll = () => {
   renderAiSettings();
   renderCadenceIntegration();
   renderCourseFiles();
+  renderClassProgress();
   renderNexusSignals();
   renderNexusSuggestions();
   renderQuizOutput();
@@ -1893,9 +2182,15 @@ const deleteAssignment = (id) => {
       ? { ...run, appliedAssignmentId: "", appliedBlockIds: [] }
       : run
   );
+  courseFiles = courseFiles.map((file) =>
+    file.assignmentId === id
+      ? { ...file, assignmentId: "", assignmentTitle: "" }
+      : file
+  );
   saveAssignments(assignments);
   saveBlocks(focusBlocks);
   saveNexusRuns(nexusRuns);
+  saveCourseFiles(courseFiles);
   renderAll();
 };
 
@@ -1982,9 +2277,19 @@ assignmentForm?.addEventListener("submit", (event) => {
       ? { ...block, assignmentTitle: assignment.title }
       : block
   );
+  courseFiles = courseFiles.map((file) =>
+    file.assignmentId === assignment.id
+      ? {
+          ...file,
+          assignmentTitle: assignment.title,
+          course: assignment.course || file.course || "",
+        }
+      : file
+  );
 
   saveAssignments(assignments);
   saveBlocks(focusBlocks);
+  saveCourseFiles(courseFiles);
   renderAll();
 
   assignmentStatus.textContent = "Assignment saved.";
@@ -2030,6 +2335,11 @@ courseFileForm?.addEventListener("submit", async (event) => {
 
   const course = courseFileCourse?.value.trim() || "";
   const kind = courseFileKind?.value || "syllabus";
+  const assignmentId = courseFileAssignment?.value || "";
+  const assignmentMatch = assignments.find(
+    (assignment) => assignment.id === assignmentId
+  );
+  const resolvedCourse = course || assignmentMatch?.course || "";
   const submitButton = courseFileForm.querySelector('button[type="submit"]');
   let previewCount = 0;
 
@@ -2050,8 +2360,10 @@ courseFileForm?.addEventListener("submit", async (event) => {
         name: file.name,
         size: file.size || 0,
         type: file.type || "unknown",
-        course,
+        course: resolvedCourse,
         kind,
+        assignmentId,
+        assignmentTitle: assignmentMatch?.title || "",
         uploadedAt: Date.now(),
         textSnippet: snippetResult.text || "",
       });
@@ -2069,6 +2381,9 @@ courseFileForm?.addEventListener("submit", async (event) => {
 
     if (courseFileInput) {
       courseFileInput.value = "";
+    }
+    if (courseFileAssignment) {
+      courseFileAssignment.value = "";
     }
   } catch (error) {
     if (courseFileStatus) {

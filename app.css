@@ -318,6 +318,33 @@ body.theme-dark .modal-backdrop {
   align-items: center;
 }
 
+.assignment-row .inline-select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.assignment-row .inline-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(27, 91, 255, 0.14);
+}
+
+.assignment-row > button {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .assignment-list {
   display: grid;
   gap: 12px;
@@ -343,6 +370,75 @@ body.theme-dark .modal-backdrop {
   gap: 10px;
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.class-progress-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.class-card {
+  display: grid;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.class-card h4 {
+  margin: 0;
+}
+
+.class-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.class-progress {
+  display: grid;
+  gap: 6px;
+}
+
+.class-progress-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.class-progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+
+.class-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #5c8dff);
+  width: 0%;
+}
+
+.class-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.class-chip {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--muted);
+  padding: 6px 10px;
+  font-size: 0.78rem;
 }
 
 .assignment-card.is-complete h4 {
@@ -511,11 +607,16 @@ body.theme-dark .calendar-cell,
 body.theme-dark .modal-card,
 body.theme-dark .nexus-item,
 body.theme-dark .assignment-card,
+body.theme-dark .class-card,
 body.theme-dark .calendar-item,
+body.theme-dark .class-progress-track,
+body.theme-dark .class-chip,
 body.theme-dark .header-actions .ghost,
 body.theme-dark .nexus-form textarea,
 body.theme-dark .nexus-form input,
 body.theme-dark .nexus-form select,
+body.theme-dark .assignment-row .inline-select,
+body.theme-dark .assignment-row > button,
 body.theme-dark .modal-form input,
 body.theme-dark .modal-form select,
 body.theme-dark .modal-form textarea {

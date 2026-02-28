@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex | Classes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body class="requires-auth">
+    <div class="bg-orbit"></div>
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-mark">Vx</span>
+        <span>Vertex</span>
+      </div>
+      <nav>
+        <a href="app.html">Command Center</a>
+        <a href="nexus.html">Nexus Prep</a>
+        <a class="active" href="classes.html">Classes</a>
+        <a href="insights.html">Insights</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <div class="profile">
+        <p id="profile-name">Signed out</p>
+        <span id="last-sync">Last sync: none</span>
+      </div>
+      <button class="ghost theme-toggle" id="theme-toggle" type="button">Dark Mode</button>
+      <button class="ghost logout" id="logout">Log out</button>
+    </aside>
+
+    <main class="dashboard">
+      <header class="dash-header">
+        <div>
+          <p class="eyebrow">Classes</p>
+          <h1>Class Progress</h1>
+        </div>
+        <div class="header-actions">
+          <a class="ghost" href="nexus.html">Upload Course Files</a>
+          <a class="ghost" href="app.html">Open Command Center</a>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card highlight">
+          <h2>Class Coverage</h2>
+          <p>Progress across classes is calculated from assignments, linked focus blocks, and uploaded course files.</p>
+          <div class="score">
+            <strong id="class-count">0</strong>
+            <span>Classes tracked</span>
+          </div>
+          <div class="graph">
+            <span><strong id="class-assignment-count">0</strong> assignments</span>
+            <span><strong id="class-file-count">0</strong> files</span>
+            <span><strong id="class-completion-rate">0%</strong> completion</span>
+          </div>
+        </article>
+
+        <article class="card wide">
+          <h3>Classes</h3>
+          <p>Each class shows assignment progress, uploaded materials, and completion trend.</p>
+          <div class="class-progress-list" id="class-progress-list"></div>
+        </article>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
