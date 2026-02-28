@@ -471,6 +471,49 @@ body.theme-dark .modal-backdrop {
   font-size: 0.78rem;
 }
 
+.admin-table-wrap {
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: auto;
+  background: #fff;
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.admin-table th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  font-size: 0.78rem;
+  text-transform: capitalize;
+}
+
 .assignment-card.is-complete h4 {
   text-decoration: line-through;
   color: var(--muted);
@@ -642,6 +685,8 @@ body.theme-dark .calendar-item,
 body.theme-dark .assignment-toolbar input,
 body.theme-dark .assignment-toolbar select,
 body.theme-dark .alert-item,
+body.theme-dark .admin-table-wrap,
+body.theme-dark .admin-status,
 body.theme-dark .class-progress-track,
 body.theme-dark .class-chip,
 body.theme-dark .header-actions .ghost,

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex | Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body class="requires-auth">
+    <div class="bg-orbit"></div>
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-mark">Vx</span>
+        <span>Vertex</span>
+      </div>
+      <nav>
+        <a href="app.html">Command Center</a>
+        <a href="nexus.html">Nexus Prep</a>
+        <a href="classes.html">Classes</a>
+        <a href="insights.html">Insights</a>
+        <a class="active" href="admin.html">Admin</a>
+        <a href="settings.html">Settings</a>
+      </nav>
+      <div class="profile">
+        <p id="profile-name">Signed out</p>
+        <span id="last-sync">Last sync: none</span>
+      </div>
+      <button class="ghost theme-toggle" id="theme-toggle" type="button">Dark Mode</button>
+      <button class="ghost logout" id="logout">Log out</button>
+    </aside>
+
+    <main class="dashboard">
+      <header class="dash-header">
+        <div>
+          <p class="eyebrow">Administration</p>
+          <h1>Admin Panel</h1>
+        </div>
+        <div class="header-actions">
+          <a class="ghost" href="nexus.html">Open Nexus Prep</a>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card highlight">
+          <h2>Workspace Users</h2>
+          <p>Local demo user access tracked in this browser.</p>
+          <div class="graph">
+            <span><strong id="admin-user-count">0</strong> users</span>
+            <span><strong id="admin-active-count">0</strong> active</span>
+            <span>Last seen: <strong id="admin-last-seen">--</strong></span>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" aria-label="Workspace users">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Last Seen</th>
+                </tr>
+              </thead>
+              <tbody id="admin-user-table-body"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>Developer API Key</h3>
+          <p>Set the integration key here. This is admin-only and not shown to students.</p>
+          <form id="ai-settings-form" class="modal-form">
+            <label for="ai-provider">Provider</label>
+            <select id="ai-provider" name="provider">
+              <option value="openai">OpenAI</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="custom">Custom</option>
+            </select>
+
+            <label for="ai-model">Model</label>
+            <input id="ai-model" name="model" type="text" placeholder="gpt-4.1-mini" />
+
+            <label for="ai-api-key">API key</label>
+            <input id="ai-api-key" name="apiKey" type="password" placeholder="sk-..." />
+
+            <label class="checkbox-row" for="ai-key-enabled">
+              <input id="ai-key-enabled" name="enabled" type="checkbox" />
+              Enable live API mode
+            </label>
+
+            <div class="modal-actions">
+              <button id="ai-settings-clear" class="ghost" type="button">Clear Key</button>
+              <button type="submit">Save API Settings</button>
+            </div>
+            <p class="modal-status" id="ai-settings-status">No API key configured.</p>
+          </form>
+        </article>
+
+        <article class="card">
+          <h3>Current Integration State</h3>
+          <p>Read-only status from current configuration.</p>
+          <div class="nexus-list">
+            <div class="nexus-item">
+              <strong id="ai-provider-display">OPENAI</strong>
+              <div class="block-meta">
+                <span id="ai-model-display">gpt-4.1-mini</span>
+                <span id="ai-mode-display">Local fallback active</span>
+                <span id="ai-key-source-display">No key saved</span>
+              </div>
+              <p class="nexus-preview">
+                For production, keep secrets on a backend endpoint instead of client storage.
+              </p>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

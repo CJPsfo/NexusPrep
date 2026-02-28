@@ -64,6 +64,10 @@ const classCountValue = document.querySelector("#class-count");
 const classAssignmentCountValue = document.querySelector("#class-assignment-count");
 const classFileCountValue = document.querySelector("#class-file-count");
 const classCompletionValue = document.querySelector("#class-completion-rate");
+const adminUserTableBody = document.querySelector("#admin-user-table-body");
+const adminUserCount = document.querySelector("#admin-user-count");
+const adminActiveCount = document.querySelector("#admin-active-count");
+const adminLastSeen = document.querySelector("#admin-last-seen");
 const cadenceStatusSummary = document.querySelector("#cadence-status-summary");
 const cadenceModeDisplay = document.querySelector("#cadence-mode-display");
 const cadenceEndpointDisplay = document.querySelector("#cadence-endpoint-display");
@@ -129,6 +133,7 @@ const NEXUS_RUNS_KEY = "vertex_nexus_runs";
 const QUIZ_RUNS_KEY = "vertex_quiz_runs";
 const COURSE_FILES_KEY = "vertex_course_files";
 const CADENCE_QUEUE_KEY = "vertex_cadence_queue";
+const USERS_KEY = "vertex_admin_users";
 const THEME_KEY = "vertex_theme";
 
 const loadBlocks = () => {
@@ -247,6 +252,47 @@ const saveCadenceQueue = (queue) => {
 
 let cadenceQueue = loadCadenceQueue();
 
+const defaultAdminUsers = () => {
+  const now = Date.now();
+  return [
+    {
+      id: "vertex-owner",
+      name: "You",
+      email: "demo@vertex.app",
+      role: "owner",
+      status: "active",
+      lastSeen: now,
+    },
+    {
+      id: "vertex-codex",
+      name: "Codex",
+      email: "codex@vertex.local",
+      role: "assistant",
+      status: "support",
+      lastSeen: now,
+    },
+  ];
+};
+
+const loadUsers = () => {
+  try {
+    const raw = localStorage.getItem(USERS_KEY);
+    if (!raw) {
+      return defaultAdminUsers();
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length ? parsed : defaultAdminUsers();
+  } catch (error) {
+    return defaultAdminUsers();
+  }
+};
+
+const saveUsers = (users) => {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+};
+
+let adminUsers = loadUsers();
+
 const loadCadenceConfig = () => {
   const developerConfig = window.VERTEX_CADENCE_CONFIG || {};
   return {
@@ -311,6 +357,56 @@ const inferNexusSourceFromDocKind = (kind) => {
 };
 
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
+
+const updateAdminUser = (input) => {
+  const emailKey = normalizeText(input.email);
+  const existingIndex = adminUsers.findIndex(
+    (user) => normalizeText(user.email) === emailKey || user.id === input.id
+  );
+
+  if (existingIndex >= 0) {
+    adminUsers[existingIndex] = {
+      ...adminUsers[existingIndex],
+      ...input,
+      email: input.email || adminUsers[existingIndex].email,
+      lastSeen: input.lastSeen || Date.now(),
+    };
+  } else {
+    adminUsers.push({
+      id: input.id || crypto.randomUUID?.() || String(Date.now()),
+      name: input.name || "User",
+      email: input.email || "",
+      role: input.role || "member",
+      status: input.status || "active",
+      lastSeen: input.lastSeen || Date.now(),
+    });
+  }
+
+  saveUsers(adminUsers);
+};
+
+const touchAdminUsersFromSession = (email) => {
+  const normalizedEmail = normalizeText(email) || "demo@vertex.app";
+  const now = Date.now();
+
+  updateAdminUser({
+    id: "vertex-owner",
+    name: "You",
+    email: normalizedEmail,
+    role: "owner",
+    status: "active",
+    lastSeen: now,
+  });
+
+  updateAdminUser({
+    id: "vertex-codex",
+    name: "Codex",
+    email: "codex@vertex.local",
+    role: "assistant",
+    status: "support",
+    lastSeen: now,
+  });
+};
 
 const startOfDay = (value = new Date()) => {
   const date = new Date(value);
@@ -890,6 +986,7 @@ const ensureSession = () => {
     if (profileName) {
       profileName.textContent = payload.email || "Demo User";
     }
+    touchAdminUsersFromSession(payload.email);
   } catch (error) {
     localStorage.removeItem("vertex_demo_auth");
     window.location.href = "login.html";
@@ -2195,6 +2292,65 @@ const renderClassProgress = () => {
   });
 };
 
+const renderAdminUsers = () => {
+  if (!adminUserTableBody) {
+    return;
+  }
+
+  const sortedUsers = [...adminUsers].sort((left, right) => {
+    if (left.role !== right.role) {
+      if (left.role === "owner") {
+        return -1;
+      }
+      if (right.role === "owner") {
+        return 1;
+      }
+    }
+    const rightSeen = Number(right.lastSeen || 0);
+    const leftSeen = Number(left.lastSeen || 0);
+    if (rightSeen !== leftSeen) {
+      return rightSeen - leftSeen;
+    }
+    return String(left.name || "").localeCompare(String(right.name || ""));
+  });
+
+  adminUserTableBody.innerHTML = "";
+  if (!sortedUsers.length) {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td colspan="5" class="empty">No users tracked yet.</td>`;
+    adminUserTableBody.appendChild(row);
+  } else {
+    sortedUsers.forEach((user) => {
+      const row = document.createElement("tr");
+      const lastSeenLabel = user.lastSeen
+        ? new Date(user.lastSeen).toLocaleString()
+        : "Never";
+      row.innerHTML = `
+        <td>${escapeHtml(user.name || "User")}</td>
+        <td>${escapeHtml(user.email || "-")}</td>
+        <td>${escapeHtml(String(user.role || "member").toUpperCase())}</td>
+        <td><span class="admin-status">${escapeHtml(user.status || "active")}</span></td>
+        <td>${escapeHtml(lastSeenLabel)}</td>
+      `;
+      adminUserTableBody.appendChild(row);
+    });
+  }
+
+  if (adminUserCount) {
+    adminUserCount.textContent = String(sortedUsers.length);
+  }
+  if (adminActiveCount) {
+    const active = sortedUsers.filter((user) => user.status === "active").length;
+    adminActiveCount.textContent = String(active);
+  }
+  if (adminLastSeen) {
+    const latest = sortedUsers
+      .map((user) => Number(user.lastSeen || 0))
+      .sort((a, b) => b - a)[0];
+    adminLastSeen.textContent = latest ? new Date(latest).toLocaleString() : "--";
+  }
+};
+
 const renderNexusSignals = () => {
   if (nexusReadinessValue && nexusReadinessLabel) {
     const totalBlocks = focusBlocks.length;
@@ -2525,6 +2681,7 @@ const renderAll = () => {
   renderCourseAutocomplete();
   renderPriorityStack();
   renderAlerts();
+  renderAdminUsers();
   renderAiSettings();
   renderCadenceIntegration();
   renderCourseFiles();
