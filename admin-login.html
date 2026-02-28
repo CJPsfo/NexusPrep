@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex | Admin Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <main class="login-shell">
+      <section class="brand">
+        <div class="logo">
+          <span class="logo-mark">Vx</span>
+          <span class="logo-text">Vertex</span>
+        </div>
+        <h1>Admin Access</h1>
+        <p>
+          Use this admin login to open the Admin Panel and manage integration
+          settings.
+        </p>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Admin Sign In</h2>
+          <p>Demo mode (password shown below).</p>
+        </div>
+        <div class="demo-credentials" aria-live="polite">
+          <p><strong>Admin Email:</strong> admin@vertex.app</p>
+          <p><strong>Admin Password:</strong> vertex-admin</p>
+        </div>
+        <form id="admin-login-form" class="login-form">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="admin@vertex.app"
+            autocomplete="email"
+            required
+          />
+
+          <label for="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="vertex-admin"
+            autocomplete="current-password"
+            required
+          />
+
+          <button type="submit" id="submit-button">Enter Admin Panel</button>
+          <p id="status" class="status">Admin demo mode only.</p>
+        </form>
+        <div class="panel-footer">
+          <a href="index.html">Return to marketing site</a>
+        </div>
+      </section>
+    </main>
+
+    <script src="admin-login.js"></script>
+  </body>
+</html>

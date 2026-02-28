@@ -402,6 +402,13 @@ main {
   color: var(--muted);
 }
 
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -427,6 +434,10 @@ main {
   .footer {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .footer-actions {
+    width: 100%;
   }
 }
 
