@@ -64,15 +64,54 @@
         </article>
 
         <article class="card">
+          <h3>Quick Capture</h3>
+          <p>Type one line and Vertex will create an assignment and focus plan.</p>
+          <form class="nexus-form" id="quick-capture-form">
+            <input
+              id="quick-capture-input"
+              name="capture"
+              type="text"
+              placeholder="Example: AP Chem quiz due tomorrow 2 hours online"
+            />
+            <div class="modal-actions">
+              <button class="ghost" id="quick-capture-clear" type="button">Clear</button>
+              <button type="submit">Add + Plan</button>
+            </div>
+            <p class="modal-status" id="quick-capture-status">
+              Quick capture turns one line into an assignment and suggested focus blocks.
+            </p>
+          </form>
+        </article>
+
+        <article class="card">
           <h3>Assignments</h3>
           <p>Create assignments and attach focus blocks.</p>
+          <div class="assignment-toolbar">
+            <input
+              id="assignment-search"
+              type="search"
+              placeholder="Search assignment or class"
+            />
+            <div class="assignment-filters">
+              <select id="assignment-filter-course">
+                <option value="all">All Classes</option>
+              </select>
+              <select id="assignment-filter-status">
+                <option value="all">All Statuses</option>
+                <option value="open">Open</option>
+                <option value="due-soon">Due Soon</option>
+                <option value="overdue">Overdue</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
           <div class="assignment-list" id="assignment-list"></div>
         </article>
 
         <article class="card">
           <h3>Priority Stack</h3>
           <p>Highest-impact work will populate here.</p>
-          <div class="graph">
+          <div class="graph" id="priority-stack">
             <span>No priorities yet</span>
           </div>
         </article>
@@ -87,7 +126,8 @@
 
         <article class="card">
           <h3>Alerts</h3>
-          <p>No alerts yet.</p>
+          <p>Actionable nudges to keep your week organized.</p>
+          <div class="alert-list" id="alert-list"></div>
         </article>
 
         <article class="card">

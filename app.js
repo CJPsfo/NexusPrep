@@ -5,10 +5,19 @@ const assignmentButtons = document.querySelectorAll('[data-action="assignment"]'
 const lastSync = document.querySelector("#last-sync");
 const syncStatus = document.querySelector("#sync-status");
 const intakeList = document.querySelector("#intake-list");
+const quickCaptureForm = document.querySelector("#quick-capture-form");
+const quickCaptureInput = document.querySelector("#quick-capture-input");
+const quickCaptureClearButton = document.querySelector("#quick-capture-clear");
+const quickCaptureStatus = document.querySelector("#quick-capture-status");
 const timeline = document.querySelector("#timeline");
 const planner = document.querySelector(".planner");
 const blockList = document.querySelector("#block-list");
 const assignmentList = document.querySelector("#assignment-list");
+const assignmentSearch = document.querySelector("#assignment-search");
+const assignmentCourseFilter = document.querySelector("#assignment-filter-course");
+const assignmentStatusFilter = document.querySelector("#assignment-filter-status");
+const alertList = document.querySelector("#alert-list");
+const priorityStack = document.querySelector("#priority-stack");
 const revealItems = document.querySelectorAll(".reveal");
 const calendarGrid = document.querySelector("#calendar-grid");
 const calendarTabs = document.querySelectorAll("[data-view]");
@@ -108,6 +117,11 @@ const levelThreshold = {
 };
 
 let currentView = "day";
+const assignmentFilterState = {
+  search: "",
+  course: "all",
+  status: "all",
+};
 const STORAGE_KEY = "vertex_focus_blocks";
 const ASSIGNMENT_KEY = "vertex_assignments";
 const AI_SETTINGS_KEY = "vertex_ai_settings";
@@ -297,6 +311,59 @@ const inferNexusSourceFromDocKind = (kind) => {
 };
 
 const normalizeText = (value) => String(value || "").trim().toLowerCase();
+
+const startOfDay = (value = new Date()) => {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
+const parseDateOnly = (value) => {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date;
+};
+
+const getDueDayDelta = (dueDateValue) => {
+  const dueDate = parseDateOnly(dueDateValue);
+  if (!dueDate) {
+    return null;
+  }
+  return Math.round(
+    (dueDate.getTime() - startOfDay().getTime()) / (1000 * 60 * 60 * 24)
+  );
+};
+
+const toBlockTimestamp = (block) => {
+  if (!block?.date) {
+    return Number.POSITIVE_INFINITY;
+  }
+
+  const rawTime = block.time || "23:59";
+  const normalizedTime = /^\d{2}:\d{2}$/.test(rawTime)
+    ? `${rawTime}:00`
+    : rawTime;
+  const parsed = new Date(`${block.date}T${normalizedTime}`);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.getTime();
+  }
+  const fallback = parseDateOnly(block.date);
+  return fallback ? fallback.getTime() : Number.POSITIVE_INFINITY;
+};
+
+const sortBlocksForDisplay = (items) =>
+  [...items].sort((left, right) => {
+    const timeDiff = toBlockTimestamp(left) - toBlockTimestamp(right);
+    if (timeDiff !== 0) {
+      return timeDiff;
+    }
+    return String(left.title || "").localeCompare(String(right.title || ""));
+  });
 
 const buildCadencePayloadFromRun = (run) => {
   if (!run) {
@@ -1034,7 +1101,8 @@ const renderTimeline = () => {
     return;
   }
   timeline.innerHTML = "";
-  if (!focusBlocks.length) {
+  const orderedBlocks = sortBlocksForDisplay(focusBlocks);
+  if (!orderedBlocks.length) {
     const empty = document.createElement("div");
     empty.className = "empty";
     empty.textContent = "No focus blocks yet.";
@@ -1042,7 +1110,7 @@ const renderTimeline = () => {
     return;
   }
 
-  focusBlocks.forEach((item) => {
+  orderedBlocks.forEach((item) => {
     const row = document.createElement("div");
     row.classList.add("new");
     row.classList.toggle("is-complete", Boolean(item.completed));
@@ -1085,7 +1153,8 @@ const renderPlanner = () => {
     return;
   }
   planner.innerHTML = "";
-  if (!focusBlocks.length) {
+  const orderedBlocks = sortBlocksForDisplay(focusBlocks);
+  if (!orderedBlocks.length) {
     const empty = document.createElement("div");
     empty.className = "empty";
     empty.textContent = "No focus blocks scheduled yet.";
@@ -1093,7 +1162,7 @@ const renderPlanner = () => {
     return;
   }
 
-  focusBlocks.forEach((item) => {
+  orderedBlocks.forEach((item) => {
     const plannerItem = document.createElement("div");
     plannerItem.className = "block-item";
     plannerItem.classList.toggle("is-complete", Boolean(item.completed));
@@ -1137,7 +1206,8 @@ const renderBlockList = () => {
     return;
   }
   blockList.innerHTML = "";
-  if (!focusBlocks.length) {
+  const orderedBlocks = sortBlocksForDisplay(focusBlocks);
+  if (!orderedBlocks.length) {
     const empty = document.createElement("div");
     empty.className = "empty";
     empty.textContent = "No focus blocks scheduled yet.";
@@ -1145,7 +1215,7 @@ const renderBlockList = () => {
     return;
   }
 
-  focusBlocks.forEach((item) => {
+  orderedBlocks.forEach((item) => {
     const entry = document.createElement("div");
     entry.className = "block-item";
     entry.classList.toggle("is-complete", Boolean(item.completed));
@@ -1242,11 +1312,176 @@ const getAssignmentProgressMetrics = (assignmentId) => {
   };
 };
 
+const listKnownCourses = () => {
+  const courses = new Set();
+  assignments.forEach((assignment) => {
+    const course = (assignment.course || "").trim();
+    if (course) {
+      courses.add(course);
+    }
+  });
+  courseFiles.forEach((file) => {
+    const course = (file.course || "").trim();
+    if (course) {
+      courses.add(course);
+    }
+  });
+  return [...courses].sort((left, right) => left.localeCompare(right));
+};
+
+const renderCourseAutocomplete = () => {
+  const courseInputs = [assignmentCourse, courseFileCourse].filter(Boolean);
+  if (!courseInputs.length) {
+    return;
+  }
+
+  let datalist = document.querySelector("#course-options");
+  if (!datalist) {
+    datalist = document.createElement("datalist");
+    datalist.id = "course-options";
+    document.body.appendChild(datalist);
+  }
+
+  datalist.innerHTML = "";
+  listKnownCourses().forEach((course) => {
+    const option = document.createElement("option");
+    option.value = course;
+    datalist.appendChild(option);
+  });
+
+  courseInputs.forEach((input) => {
+    input.setAttribute("list", "course-options");
+  });
+};
+
+const buildAssignmentSnapshot = (assignment) => {
+  const { totalMinutes, completedMinutes } = getAssignmentProgressMetrics(assignment.id);
+  const estimatedMinutes = Number(assignment.hours || 0) * 60;
+  const completionPct =
+    estimatedMinutes > 0
+      ? Math.min(100, Math.round((completedMinutes / estimatedMinutes) * 100))
+      : 0;
+  const dueDelta = getDueDayDelta(assignment.due);
+  const isCompleted = completionPct >= 100 && estimatedMinutes > 0;
+  const isOverdue = dueDelta !== null && dueDelta < 0 && !isCompleted;
+  const isDueSoon = dueDelta !== null && dueDelta >= 0 && dueDelta <= 3 && !isCompleted;
+  const isUnscheduled = totalMinutes === 0;
+
+  return {
+    assignment,
+    totalMinutes,
+    completedMinutes,
+    estimatedMinutes,
+    completionPct,
+    dueDelta,
+    isCompleted,
+    isOverdue,
+    isDueSoon,
+    isUnscheduled,
+  };
+};
+
+const getFilteredAssignmentSnapshots = () => {
+  const courseFilter = assignmentFilterState.course;
+  const search = normalizeText(assignmentFilterState.search);
+  const statusFilter = assignmentFilterState.status;
+
+  return assignments
+    .map((assignment) => buildAssignmentSnapshot(assignment))
+    .filter((snapshot) => {
+      if (courseFilter !== "all") {
+        const courseKey = normalizeText(snapshot.assignment.course);
+        if (courseKey !== courseFilter) {
+          return false;
+        }
+      }
+
+      if (search) {
+        const haystack = normalizeText(
+          `${snapshot.assignment.title} ${snapshot.assignment.course}`
+        );
+        if (!haystack.includes(search)) {
+          return false;
+        }
+      }
+
+      if (statusFilter === "open" && snapshot.isCompleted) {
+        return false;
+      }
+      if (statusFilter === "due-soon" && !snapshot.isDueSoon) {
+        return false;
+      }
+      if (statusFilter === "overdue" && !snapshot.isOverdue) {
+        return false;
+      }
+      if (statusFilter === "completed" && !snapshot.isCompleted) {
+        return false;
+      }
+
+      return true;
+    })
+    .sort((left, right) => {
+      if (left.isOverdue !== right.isOverdue) {
+        return left.isOverdue ? -1 : 1;
+      }
+      if (left.isDueSoon !== right.isDueSoon) {
+        return left.isDueSoon ? -1 : 1;
+      }
+      if (left.isCompleted !== right.isCompleted) {
+        return left.isCompleted ? 1 : -1;
+      }
+      const leftDue = left.dueDelta ?? Number.POSITIVE_INFINITY;
+      const rightDue = right.dueDelta ?? Number.POSITIVE_INFINITY;
+      if (leftDue !== rightDue) {
+        return leftDue - rightDue;
+      }
+      return left.assignment.title.localeCompare(right.assignment.title);
+    });
+};
+
+const renderAssignmentFilters = () => {
+  if (!assignmentCourseFilter) {
+    return;
+  }
+
+  const selectedCourse = assignmentFilterState.course;
+  assignmentCourseFilter.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "All Classes";
+  assignmentCourseFilter.appendChild(allOption);
+
+  listKnownCourses().forEach((course) => {
+    const option = document.createElement("option");
+    option.value = normalizeText(course);
+    option.textContent = course;
+    assignmentCourseFilter.appendChild(option);
+  });
+
+  const hasSelectedCourse = Array.from(assignmentCourseFilter.options).some(
+    (option) => option.value === selectedCourse
+  );
+  assignmentCourseFilter.value = hasSelectedCourse ? selectedCourse : "all";
+  assignmentFilterState.course = assignmentCourseFilter.value;
+
+  if (assignmentStatusFilter) {
+    assignmentStatusFilter.value = assignmentFilterState.status;
+  }
+
+  if (assignmentSearch) {
+    assignmentSearch.value = assignmentFilterState.search;
+  }
+};
+
 const renderAssignmentList = () => {
   if (!assignmentList) {
     return;
   }
+
+  renderAssignmentFilters();
   assignmentList.innerHTML = "";
+
   if (!assignments.length) {
     const empty = document.createElement("div");
     empty.className = "empty";
@@ -1255,19 +1490,22 @@ const renderAssignmentList = () => {
     return;
   }
 
-  assignments.forEach((assignment) => {
-    const { totalMinutes, completedMinutes } = getAssignmentProgressMetrics(
-      assignment.id
-    );
-    const estimatedMinutes = Number(assignment.hours || 0) * 60;
-    const completionPct =
-      estimatedMinutes > 0
-        ? Math.min(100, Math.round((completedMinutes / estimatedMinutes) * 100))
-        : 0;
+  const snapshots = getFilteredAssignmentSnapshots();
+  if (!snapshots.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No assignments match the current filters.";
+    assignmentList.appendChild(empty);
+    return;
+  }
+
+  snapshots.forEach((snapshot) => {
+    const { assignment, totalMinutes, completedMinutes, completionPct, dueDelta } =
+      snapshot;
 
     const card = document.createElement("div");
     card.className = "assignment-card";
-    if (completionPct === 100 && totalMinutes > 0) {
+    if (snapshot.isCompleted && totalMinutes > 0) {
       card.classList.add("is-complete");
     }
 
@@ -1276,11 +1514,21 @@ const renderAssignmentList = () => {
 
     const meta = document.createElement("div");
     meta.className = "assignment-meta";
+    let dueLabel = "No due date";
+    if (typeof dueDelta === "number") {
+      if (dueDelta < 0) {
+        dueLabel = `${Math.abs(dueDelta)} day(s) overdue`;
+      } else if (dueDelta === 0) {
+        dueLabel = "Due today";
+      } else {
+        dueLabel = `Due in ${dueDelta} day(s)`;
+      }
+    }
     const turnInLabel =
       assignment.turnIn === "physical" ? "Physical" : "Online";
     const kindLabel = assignment.kind || "homework";
     const difficultyLabel = assignment.difficulty || "medium";
-    meta.textContent = `${assignment.course ? `${assignment.course} · ` : ""}${kindLabel} · ${difficultyLabel} · Due ${assignment.due} · Est ${assignment.hours}h · ${turnInLabel} turn-in · Scheduled ${Math.round(
+    meta.textContent = `${assignment.course ? `${assignment.course} · ` : ""}${kindLabel} · ${difficultyLabel} · ${dueLabel} · Est ${assignment.hours}h · ${turnInLabel} turn-in · Scheduled ${Math.round(
       totalMinutes
     )}m · Completed ${Math.round(completedMinutes)}m (${completionPct}%)`;
 
@@ -1301,6 +1549,136 @@ const renderAssignmentList = () => {
     actions.append(edit, remove);
     card.append(title, meta, actions);
     assignmentList.appendChild(card);
+  });
+};
+
+const renderPriorityStack = () => {
+  if (!priorityStack) {
+    return;
+  }
+
+  priorityStack.innerHTML = "";
+  if (!assignments.length) {
+    const empty = document.createElement("span");
+    empty.textContent = "No priorities yet";
+    priorityStack.appendChild(empty);
+    return;
+  }
+
+  const topPriority = assignments
+    .map((assignment) => buildAssignmentSnapshot(assignment))
+    .sort((left, right) => {
+      if (left.isOverdue !== right.isOverdue) {
+        return left.isOverdue ? -1 : 1;
+      }
+      if (left.isDueSoon !== right.isDueSoon) {
+        return left.isDueSoon ? -1 : 1;
+      }
+      return right.completionPct - left.completionPct;
+    })
+    .slice(0, 5);
+
+  topPriority.forEach((snapshot) => {
+    const chip = document.createElement("span");
+    const prefix = snapshot.isOverdue
+      ? "Overdue"
+      : snapshot.isDueSoon
+      ? "Due soon"
+      : snapshot.assignment.priority || "Priority";
+    chip.textContent = `${prefix}: ${snapshot.assignment.title}`;
+    priorityStack.appendChild(chip);
+  });
+};
+
+const renderAlerts = () => {
+  if (!alertList) {
+    return;
+  }
+
+  alertList.innerHTML = "";
+  const snapshots = assignments
+    .map((assignment) => buildAssignmentSnapshot(assignment))
+    .sort((left, right) => {
+      const leftDue = left.dueDelta ?? Number.POSITIVE_INFINITY;
+      const rightDue = right.dueDelta ?? Number.POSITIVE_INFINITY;
+      return leftDue - rightDue;
+    });
+
+  const alerts = [];
+  snapshots.forEach((snapshot) => {
+    if (snapshot.isOverdue) {
+      alerts.push({
+        level: "critical",
+        title: snapshot.assignment.title,
+        detail: `${Math.abs(snapshot.dueDelta || 0)} day(s) overdue`,
+        note: "Add a recovery focus block today.",
+      });
+      return;
+    }
+
+    if (snapshot.isDueSoon) {
+      alerts.push({
+        level: "warning",
+        title: snapshot.assignment.title,
+        detail:
+          snapshot.dueDelta === 0
+            ? "Due today"
+            : `Due in ${snapshot.dueDelta} day(s)`,
+        note:
+          snapshot.totalMinutes === 0
+            ? "No focus time scheduled yet."
+            : `${Math.round(snapshot.totalMinutes)}m scheduled so far.`,
+      });
+      return;
+    }
+
+    if (snapshot.isUnscheduled && !snapshot.isCompleted) {
+      alerts.push({
+        level: "warning",
+        title: snapshot.assignment.title,
+        detail: "No focus blocks scheduled",
+        note: "Open assignment and add a block.",
+      });
+    }
+  });
+
+  const unlinkedFiles = courseFiles.filter(
+    (file) => !file.assignmentId && file.kind !== "syllabus"
+  );
+  if (unlinkedFiles.length) {
+    alerts.push({
+      level: "warning",
+      title: "Course files need linking",
+      detail: `${unlinkedFiles.length} file(s) not linked to assignments`,
+      note: "Link files in Nexus Prep for better organization.",
+    });
+  }
+
+  if (!alerts.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No active alerts. You are on track.";
+    alertList.appendChild(empty);
+    return;
+  }
+
+  alerts.slice(0, 8).forEach((alert) => {
+    const item = document.createElement("div");
+    item.className = `alert-item ${alert.level}`;
+
+    const title = document.createElement("strong");
+    title.textContent = alert.title;
+
+    const meta = document.createElement("div");
+    meta.className = "alert-meta";
+    meta.textContent = alert.detail;
+
+    const note = document.createElement("p");
+    note.className = "nexus-preview";
+    note.textContent = alert.note;
+
+    item.append(title, meta, note);
+    alertList.appendChild(item);
   });
 };
 
@@ -2144,6 +2522,9 @@ const renderAll = () => {
   renderBlockList();
   renderAssignmentList();
   renderAssignmentOptions();
+  renderCourseAutocomplete();
+  renderPriorityStack();
+  renderAlerts();
   renderAiSettings();
   renderCadenceIntegration();
   renderCourseFiles();
@@ -2301,6 +2682,57 @@ assignmentForm?.addEventListener("submit", (event) => {
   }
 });
 
+assignmentSearch?.addEventListener("input", () => {
+  assignmentFilterState.search = assignmentSearch.value || "";
+  renderAll();
+});
+
+assignmentCourseFilter?.addEventListener("change", () => {
+  assignmentFilterState.course = assignmentCourseFilter.value || "all";
+  renderAll();
+});
+
+assignmentStatusFilter?.addEventListener("change", () => {
+  assignmentFilterState.status = assignmentStatusFilter.value || "all";
+  renderAll();
+});
+
+quickCaptureClearButton?.addEventListener("click", () => {
+  if (quickCaptureForm) {
+    quickCaptureForm.reset();
+  }
+  if (quickCaptureStatus) {
+    quickCaptureStatus.textContent =
+      "Quick capture turns one line into an assignment and suggested focus blocks.";
+  }
+});
+
+quickCaptureForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const text = (quickCaptureInput?.value || "").trim();
+  if (!text) {
+    if (quickCaptureStatus) {
+      quickCaptureStatus.textContent = "Enter a short assignment line first.";
+    }
+    return;
+  }
+
+  const suggestion = createNexusSuggestion("assignment", text);
+  nexusRuns.unshift(suggestion);
+  nexusRuns = nexusRuns.slice(0, 20);
+  saveNexusRuns(nexusRuns);
+  applyNexusSuggestion(suggestion.id, true);
+
+  if (quickCaptureStatus) {
+    quickCaptureStatus.textContent = `Added "${suggestion.assignment.title}" and scheduled ${suggestion.sessions.length} focus block(s).`;
+  }
+
+  if (quickCaptureForm) {
+    quickCaptureForm.reset();
+  }
+});
+
 nexusClearButton?.addEventListener("click", () => {
   if (nexusForm) {
     nexusForm.reset();
@@ -2395,6 +2827,21 @@ courseFileForm?.addEventListener("submit", async (event) => {
       submitButton.disabled = false;
       submitButton.textContent = "Add Files";
     }
+  }
+});
+
+courseFileAssignment?.addEventListener("change", () => {
+  if (!courseFileCourse) {
+    return;
+  }
+  if (courseFileCourse.value.trim()) {
+    return;
+  }
+  const linked = assignments.find(
+    (assignment) => assignment.id === courseFileAssignment.value
+  );
+  if (linked?.course) {
+    courseFileCourse.value = linked.course;
   }
 });
 

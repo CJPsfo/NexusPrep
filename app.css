@@ -351,6 +351,36 @@ body.theme-dark .modal-backdrop {
   margin-top: 16px;
 }
 
+.assignment-toolbar {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.assignment-toolbar input,
+.assignment-toolbar select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.assignment-toolbar input:focus,
+.assignment-toolbar select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(27, 91, 255, 0.14);
+}
+
+.assignment-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .assignment-card {
   background: #fff;
   border-radius: 12px;
@@ -609,6 +639,9 @@ body.theme-dark .nexus-item,
 body.theme-dark .assignment-card,
 body.theme-dark .class-card,
 body.theme-dark .calendar-item,
+body.theme-dark .assignment-toolbar input,
+body.theme-dark .assignment-toolbar select,
+body.theme-dark .alert-item,
 body.theme-dark .class-progress-track,
 body.theme-dark .class-chip,
 body.theme-dark .header-actions .ghost,
@@ -632,6 +665,14 @@ body.theme-dark .highlight {
 body.theme-dark .timeline div.new {
   background: #132341;
   border-color: rgba(92, 141, 255, 0.45);
+}
+
+body.theme-dark .alert-item.critical {
+  background: rgba(204, 23, 66, 0.16);
+}
+
+body.theme-dark .alert-item.warning {
+  background: rgba(180, 104, 18, 0.18);
 }
 
 body.theme-dark .graph span,
@@ -863,6 +904,43 @@ body.theme-dark .calendar-item.low {
   margin: 4px 0 0;
 }
 
+.alert-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.alert-item {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 12px;
+}
+
+.alert-item strong {
+  margin: 0;
+}
+
+.alert-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.alert-item.critical {
+  border-color: rgba(204, 23, 66, 0.35);
+  background: rgba(204, 23, 66, 0.05);
+}
+
+.alert-item.warning {
+  border-color: rgba(180, 104, 18, 0.35);
+  background: rgba(180, 104, 18, 0.06);
+}
+
 .score {
   display: flex;
   align-items: baseline;
@@ -916,6 +994,10 @@ body.theme-dark .calendar-item.low {
   }
 
   .assignment-row {
+    grid-template-columns: 1fr;
+  }
+
+  .assignment-filters {
     grid-template-columns: 1fr;
   }
 
