@@ -514,6 +514,24 @@ body.theme-dark .modal-backdrop {
   text-transform: capitalize;
 }
 
+.admin-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.admin-actions button {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .assignment-card.is-complete h4 {
   text-decoration: line-through;
   color: var(--muted);
@@ -687,6 +705,7 @@ body.theme-dark .assignment-toolbar select,
 body.theme-dark .alert-item,
 body.theme-dark .admin-table-wrap,
 body.theme-dark .admin-status,
+body.theme-dark .admin-actions button,
 body.theme-dark .class-progress-track,
 body.theme-dark .class-chip,
 body.theme-dark .header-actions .ghost,

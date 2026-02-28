@@ -68,6 +68,9 @@ const adminUserTableBody = document.querySelector("#admin-user-table-body");
 const adminUserCount = document.querySelector("#admin-user-count");
 const adminActiveCount = document.querySelector("#admin-active-count");
 const adminLastSeen = document.querySelector("#admin-last-seen");
+const adminLogoutAllButton = document.querySelector("#admin-logout-all");
+const adminClearHistoryButton = document.querySelector("#admin-clear-history");
+const adminUserStatus = document.querySelector("#admin-user-status");
 const cadenceStatusSummary = document.querySelector("#cadence-status-summary");
 const cadenceModeDisplay = document.querySelector("#cadence-mode-display");
 const cadenceEndpointDisplay = document.querySelector("#cadence-endpoint-display");
@@ -281,7 +284,7 @@ const loadUsers = () => {
       return defaultAdminUsers();
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length ? parsed : defaultAdminUsers();
+    return Array.isArray(parsed) ? parsed : defaultAdminUsers();
   } catch (error) {
     return defaultAdminUsers();
   }
@@ -2351,6 +2354,35 @@ const renderAdminUsers = () => {
   }
 };
 
+const setAdminUserMessage = (message) => {
+  if (adminUserStatus) {
+    adminUserStatus.textContent = message;
+  }
+};
+
+const clearAdminUserHistory = () => {
+  adminUsers = [];
+  saveUsers(adminUsers);
+  renderAll();
+  setAdminUserMessage("User history cleared.");
+};
+
+const logoutAllUsers = () => {
+  const now = Date.now();
+  adminUsers = adminUsers.map((user) => ({
+    ...user,
+    status: "logged_out",
+    lastSeen: now,
+  }));
+  saveUsers(adminUsers);
+  renderAll();
+  setAdminUserMessage("All users logged out. Redirecting to admin login...");
+  localStorage.removeItem("vertex_demo_auth");
+  setTimeout(() => {
+    window.location.href = "admin-login.html";
+  }, 450);
+};
+
 const renderNexusSignals = () => {
   if (nexusReadinessValue && nexusReadinessLabel) {
     const totalBlocks = focusBlocks.length;
@@ -3000,6 +3032,26 @@ courseFileAssignment?.addEventListener("change", () => {
   if (linked?.course) {
     courseFileCourse.value = linked.course;
   }
+});
+
+adminClearHistoryButton?.addEventListener("click", () => {
+  const confirmed = window.confirm(
+    "Clear all tracked user history from this browser?"
+  );
+  if (!confirmed) {
+    return;
+  }
+  clearAdminUserHistory();
+});
+
+adminLogoutAllButton?.addEventListener("click", () => {
+  const confirmed = window.confirm(
+    "Log out all users and end the current admin session?"
+  );
+  if (!confirmed) {
+    return;
+  }
+  logoutAllUsers();
 });
 
 cadenceExportButton?.addEventListener("click", () => {
