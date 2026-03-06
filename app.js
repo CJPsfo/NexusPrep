@@ -1144,10 +1144,6 @@ themeToggle?.addEventListener("click", () => {
   applyTheme(isDark ? "light" : "dark");
 });
 
-setTimeout(() => {
-  highlight?.classList.add("pulse");
-}, 500);
-
 initTheme();
 ensureSession();
 
